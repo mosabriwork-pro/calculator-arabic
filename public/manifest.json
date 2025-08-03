@@ -1,0 +1,27 @@
+{
+  "short_name": "موصبري",
+  "name": "موصبري | حاسبة لاعب كرة القدم",
+  "icons": [
+    {
+      "src": "logoforweb.png",
+      "sizes": "512x512 256x256 128x128 64x64 32x32 16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "logoforweb.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logoforweb.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#22c55e",
+  "background_color": "#1a472a",
+  "dir": "rtl",
+  "lang": "ar"
+}

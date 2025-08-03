@@ -1,0 +1,62 @@
+{
+  "name": "calculator-arabic",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^16.18.126",
+    "@types/nodemailer": "^6.4.17",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "chart.js": "^4.5.0",
+    "cookies-next": "^4.1.0",
+    "crypto": "^1.0.1",
+    "html2canvas": "^1.4.1",
+    "html2pdf.js": "^0.10.3",
+    "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
+    "jspdf-font": "^1.0.7",
+    "next": "^14.0.0",
+    "nodemailer": "^7.0.5",
+    "pdfmake": "^0.2.20",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "eslintConfig": {
+    "extends": [
+      "next/core-web-vitals"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/pdfmake": "^0.2.11",
+    "eslint": "^9.32.0"
+  }
+}
