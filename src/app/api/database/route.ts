@@ -8,7 +8,34 @@ const pool = new Pool({
   }
 })
 
-export async function GET() {
+// دالة للتحقق من كلمة المرور
+function checkAuth(request: Request) {
+  const authHeader = request.headers.get('authorization')
+  const expectedPassword = process.env.ADMIN_PASSWORD || 'admin123'
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return false
+  }
+  
+  const password = authHeader.replace('Bearer ', '')
+  return password === expectedPassword
+}
+
+export async function GET(request: Request) {
+  // التحقق من الأمان
+  if (!checkAuth(request)) {
+    return NextResponse.json({
+      status: 'error',
+      message: 'غير مصرح لك بالوصول. مطلوب كلمة مرور.',
+      hint: 'أضف Authorization header مع كلمة المرور'
+    }, { 
+      status: 401,
+      headers: {
+        'WWW-Authenticate': 'Bearer realm="Database Access"'
+      }
+    })
+  }
+
   try {
     const client = await pool.connect()
     
@@ -61,7 +88,8 @@ export async function GET() {
         customers: customersCount.rows[0].count,
         operations: operationsCount.rows[0].count
       },
-      tables: ['customers', 'operations', 'statistics']
+      tables: ['customers', 'operations', 'statistics'],
+      security: 'محمية بكلمة مرور'
     })
     
   } catch (error) {
@@ -74,6 +102,14 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // التحقق من الأمان
+  if (!checkAuth(request)) {
+    return NextResponse.json({
+      status: 'error',
+      message: 'غير مصرح لك بالوصول. مطلوب كلمة مرور.'
+    }, { status: 401 })
+  }
+
   try {
     const { name, email, phone } = await request.json()
     
