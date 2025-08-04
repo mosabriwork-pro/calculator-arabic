@@ -54,14 +54,21 @@ export default function Navbar() {
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '10px'
+        gap: '10px',
+        '@media (max-width: 768px)': {
+          padding: '8px 15px',
+          gap: '5px'
+        }
       }}>
         {/* Logo Section */}
         <div className="logo-section" style={{
           display: 'flex',
           alignItems: 'center',
           gap: '15px',
-          flexShrink: 0
+          flexShrink: 0,
+          '@media (max-width: 768px)': {
+            gap: '8px'
+          }
         }}>
           {/* Logo Container - Ready for Custom Logo */}
           <div className="logo-container" style={{
@@ -74,7 +81,12 @@ export default function Navbar() {
             justifyContent: 'center',
             boxShadow: '0 4px 15px rgba(34,197,94,0.3)',
             border: '2px solid rgba(255,255,255,0.2)',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            '@media (max-width: 768px)': {
+              width: '35px',
+              height: '35px',
+              borderRadius: '10px'
+            }
           }}>
             {!logoError ? (
               <img 
@@ -84,7 +96,11 @@ export default function Navbar() {
                   width: '50px', 
                   height: '50px',
                   objectFit: 'contain',
-                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                  '@media (max-width: 768px)': {
+                    width: '35px',
+                    height: '35px'
+                  }
                 }} 
                 onError={() => setLogoError(true)}
               />
@@ -92,7 +108,10 @@ export default function Navbar() {
               <span style={{ 
                 fontSize: '36px', 
                 color: 'white',
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                '@media (max-width: 768px)': {
+                  fontSize: '24px'
+                }
               }}>
                 ⚽
               </span>
@@ -109,7 +128,11 @@ export default function Navbar() {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              '@media (max-width: 768px)': {
+                fontSize: '18px',
+                fontWeight: '700'
+              }
             }}>
               موصبري | Mosabri
             </h1>
@@ -117,7 +140,11 @@ export default function Navbar() {
               fontSize: '12px',
               color: '#dcfce7',
               margin: 0,
-              fontWeight: '500'
+              fontWeight: '500',
+              '@media (max-width: 768px)': {
+                fontSize: '10px',
+                fontWeight: '400'
+              }
             }}>
               حاسبة لاعب كرة القدم
             </p>
@@ -128,7 +155,10 @@ export default function Navbar() {
         <div className="nav-buttons" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '20px'
+          gap: '20px',
+          '@media (max-width: 768px)': {
+            gap: '10px'
+          }
         }}>
           {/* Social Media Dropdown */}
           <div style={{ position: 'relative', zIndex: 1002 }}>
@@ -149,7 +179,13 @@ export default function Navbar() {
                 alignItems: 'center',
                 gap: '8px',
                 cursor: 'pointer',
-                userSelect: 'none'
+                userSelect: 'none',
+                '@media (max-width: 768px)': {
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  padding: '8px 15px',
+                  borderRadius: '20px'
+                }
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'rgba(255,255,255,0.2)'
@@ -160,13 +196,21 @@ export default function Navbar() {
                 e.currentTarget.style.transform = 'scale(1)'
               }}
             >
-              <span style={{ fontSize: '18px' }}>📱</span>
-              حساباتنا
               <span style={{ 
-                fontSize: '12px',
-                transition: 'transform 0.3s ease',
-                transform: showSocialMenu ? 'rotate(180deg)' : 'rotate(0deg)'
-              }}>▼</span>
+              fontSize: '18px',
+              '@media (max-width: 768px)': {
+                fontSize: '16px'
+              }
+            }}>📱</span>
+              حساباتنا
+                          <span style={{ 
+              fontSize: '12px',
+              transition: 'transform 0.3s ease',
+              transform: showSocialMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+              '@media (max-width: 768px)': {
+                fontSize: '10px'
+              }
+            }}>▼</span>
             </button>
 
             {/* Dropdown Menu */}
@@ -286,7 +330,13 @@ export default function Navbar() {
               alignItems: 'center',
               gap: '8px',
               cursor: 'pointer',
-              userSelect: 'none'
+              userSelect: 'none',
+              '@media (max-width: 768px)': {
+                fontSize: '14px',
+                fontWeight: '500',
+                padding: '8px 15px',
+                borderRadius: '20px'
+              }
             }}
             onClick={() => {
               alert('المتجر الالكتروني قريباً!');
@@ -300,7 +350,12 @@ export default function Navbar() {
               e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-            <span style={{ fontSize: '18px' }}>🛒</span>
+            <span style={{ 
+              fontSize: '18px',
+              '@media (max-width: 768px)': {
+                fontSize: '16px'
+              }
+            }}>🛒</span>
             المتجر الالكتروني
           </button>
         </div>
@@ -331,6 +386,53 @@ export default function Navbar() {
             to {
               opacity: 1;
               transform: translateY(0);
+            }
+          }
+          
+          /* Mobile Responsive Styles */
+          @media (max-width: 768px) {
+            nav {
+              padding: 8px 0 !important;
+            }
+            
+            .logo-section {
+              gap: 8px !important;
+            }
+            
+            .logo-container {
+              width: 35px !important;
+              height: 35px !important;
+              border-radius: 10px !important;
+            }
+            
+            .logo-container img {
+              width: 35px !important;
+              height: 35px !important;
+            }
+            
+            .nav-buttons {
+              gap: 10px !important;
+            }
+            
+            .nav-buttons button {
+              font-size: 14px !important;
+              font-weight: 500 !important;
+              padding: 8px 15px !important;
+              border-radius: 20px !important;
+            }
+            
+            .nav-buttons button span {
+              font-size: 16px !important;
+            }
+            
+            h1 {
+              font-size: 18px !important;
+              font-weight: 700 !important;
+            }
+            
+            p {
+              font-size: 10px !important;
+              font-weight: 400 !important;
             }
           }
         `

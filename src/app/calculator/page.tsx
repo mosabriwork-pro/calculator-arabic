@@ -317,75 +317,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
   }
 
   // Export to PDF
-  // دالة اختبار بسيطة للتصدير
-  const testExport = async () => {
-    setIsExporting(true)
-    try {
-      const html2pdf = await import('html2pdf.js')
-      
-      // إنشاء عنصر بسيط مباشر في الصفحة
-      const testDiv = document.createElement('div')
-      testDiv.id = 'test-export-element'
-      testDiv.innerHTML = `
-        <div style="
-          font-family: 'Cairo', sans-serif;
-          background: #f0f9ff;
-          border: 2px solid #22c55e;
-          padding: 20px;
-          border-radius: 10px;
-          text-align: center;
-          width: 400px;
-          margin: 20px auto;
-        ">
-          <h1 style="color: #1a472a; font-size: 24px; margin-bottom: 15px;">اختبار التصدير إلى PDF</h1>
-          <p style="color: #333; font-size: 16px; line-height: 1.5;">هذا نص عربي بسيط لاختبار تصدير PDF</p>
-          <p style="color: #333; font-size: 16px; line-height: 1.5;">اسم اللاعب: ${playerData.name || 'لم يتم إدخال الاسم'}</p>
-          <p style="color: #333; font-size: 16px; line-height: 1.5;">الوزن: ${playerData.weight} كجم</p>
-          <p style="color: #333; font-size: 16px; line-height: 1.5;">الطول: ${playerData.height} سم</p>
-          <p style="color: #333; font-size: 16px; line-height: 1.5;">التاريخ: ${new Date().toLocaleDateString('ar-SA')}</p>
-        </div>
-      `
-      
-      // إضافة العنصر للصفحة بشكل مرئي
-      document.body.appendChild(testDiv)
-      
-      const opt = {
-        margin: [10, 10, 10, 10],
-        filename: `test_export_${new Date().toISOString().split('T')[0]}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 1,
-          useCORS: true,
-          allowTaint: true,
-          letterRendering: true,
-          logging: true,
-          removeContainer: false
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait',
-          compress: true
-        }
-      }
-      
-      // انتظار قصير لتحميل الخطوط
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // تصدير العنصر المرئي
-      await html2pdf.default().from(testDiv).set(opt).save()
-      
-      // إزالة العنصر من الصفحة
-      document.body.removeChild(testDiv)
-      
-      alert('تم إنشاء ملف اختبار بنجاح!')
-    } catch (error) {
-      console.error('Error in test export:', error)
-      alert('خطأ في اختبار التصدير: ' + (error instanceof Error ? error.message : 'خطأ غير معروف'))
-    } finally {
-      setIsExporting(false)
-    }
-  }
+
 
   // دالة إنشاء محتوى HTML للـ PDF
   const createPDFContent = () => {
@@ -1520,25 +1452,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
         {/* Export Buttons */}
         {showResults && (
           <div style={{ textAlign: 'center', display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button
-              onClick={testExport}
-              disabled={isExporting}
-              style={{
-                background: isExporting ? '#9ca3af' : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                color: 'white',
-                padding: '12px 20px',
-                borderRadius: '8px',
-                border: 'none',
-                fontSize: '0.9rem',
-                fontWeight: 'bold',
-                cursor: isExporting ? 'not-allowed' : 'pointer',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s ease',
-                minWidth: '150px'
-              }}
-            >
-              {isExporting ? 'جاري الاختبار...' : 'اختبار التصدير'}
-            </button>
+
             
             <button
               onClick={exportToPrintPage}
