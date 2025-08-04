@@ -1,0 +1,10 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- خلفية خضراء -->
+  <rect width="64" height="64" rx="12" fill="#22c55e"/>
+  
+  <!-- حرف M أبيض -->
+  <path d="M12 48V16L20 32L28 16L36 32L44 16V48H40V36L32 20L24 36V48H12Z" fill="white"/>
+  
+  <!-- قوس دائري -->
+  <path d="M44 20C44 20 48 24 48 28C48 32 44 36 44 36" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg> 

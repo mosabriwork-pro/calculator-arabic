@@ -87,16 +87,10 @@ export default function AdminDashboard() {
   // Check if admin is already logged in
   useEffect(() => {
     const adminSession = localStorage.getItem('adminSession')
-    const userEmail = localStorage.getItem('userEmail')
-    
-    // التحقق من أن المستخدم هو المدير المصرح له فقط
-    if (adminSession === 'talal200265@gmail.com' && userEmail === 'talal200265@gmail.com') {
+    if (adminSession === 'talal200265@gmail.com') {
       setIsLoggedIn(true)
-    } else if (userEmail && userEmail !== 'talal200265@gmail.com') {
-      // إذا كان المستخدم ليس المدير، توجيهه للصفحة الرئيسية
-      router.push('/calculator')
     }
-  }, [router])
+  }, [])
 
   // Load email records from localStorage on component mount
   useEffect(() => {
@@ -221,16 +215,9 @@ export default function AdminDashboard() {
     e.preventDefault()
     setLoginError('')
     
-    // التحقق من أن البريد الإلكتروني هو المدير المصرح له فقط
-    if (adminEmail !== 'talal200265@gmail.com') {
-      setLoginError('غير مصرح لك بالوصول للوحة التحكم')
-      return
-    }
-    
     if (adminEmail === 'talal200265@gmail.com' && adminPassword === 'admin123') {
       setIsLoggedIn(true)
       localStorage.setItem('adminSession', adminEmail)
-      localStorage.setItem('userEmail', adminEmail)
     } else {
       setLoginError('بيانات الدخول غير صحيحة')
     }

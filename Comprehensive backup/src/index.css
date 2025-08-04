@@ -1,0 +1,433 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Simpler football field background */
+  background: linear-gradient(135deg, #388e3c 0%, #43a047 100%);
+  background-color: #388e3c;
+  position: relative;
+}
+
+body::before {
+  content: '⚽';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18vw;
+  color: rgba(255,255,255,0.08);
+  pointer-events: none;
+  z-index: 0;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  
+  body::before {
+    font-size: 25vw;
+  }
+  
+  /* Navbar mobile improvements */
+  nav {
+    padding: 10px 15px !important;
+  }
+  
+  nav > div {
+    padding: 10px 15px !important;
+    gap: 8px !important;
+  }
+  
+  nav .logo-container {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+  }
+  
+  nav .logo-container img {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  
+  nav .logo-section {
+    gap: 10px !important;
+  }
+  
+  nav .nav-buttons {
+    gap: 8px !important;
+  }
+  
+  nav button {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    min-height: 36px !important;
+  }
+  
+  /* PDF mobile improvements */
+  .pdf-container {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+  
+  /* Mobile text improvements */
+  .mobile-text-center {
+    text-align: center !important;
+  }
+  
+  .mobile-text-right {
+    text-align: right !important;
+  }
+  
+  /* Mobile spacing improvements */
+  .mobile-margin-top {
+    margin-top: 15px !important;
+  }
+  
+  .mobile-margin-bottom {
+    margin-bottom: 15px !important;
+  }
+  
+  /* Mobile card improvements */
+  .mobile-card {
+    margin: 10px 0 !important;
+    padding: 15px !important;
+  }
+  
+  /* Improve touch targets */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better spacing for mobile */
+  .mobile-padding {
+    padding: 10px;
+  }
+  
+  /* Stack elements vertically on mobile */
+  .mobile-stack {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+  
+  /* Full width on mobile */
+  .mobile-full {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Smaller text on mobile */
+  .mobile-text-sm {
+    font-size: 14px !important;
+  }
+  
+  .mobile-text-xs {
+    font-size: 12px !important;
+  }
+  
+  /* Calculator specific mobile styles */
+  .calculator-container {
+    padding: 15px 10px !important;
+    gap: 15px !important;
+  }
+  
+  .calculator-title {
+    font-size: 2rem !important;
+  }
+  
+  .calculator-card {
+    min-width: 100% !important;
+    padding: 15px !important;
+  }
+  
+  .calculator-input {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    padding: 12px 10px !important;
+  }
+  
+  .calculator-button {
+    padding: 15px 20px !important;
+    font-size: 16px !important;
+    min-height: 50px !important;
+  }
+  
+  .results-card {
+    min-width: 100% !important;
+    padding: 20px !important;
+  }
+  
+  .results-item {
+    padding: 15px 0 !important;
+    font-size: 14px !important;
+  }
+  
+  .results-main {
+    font-size: 18px !important;
+    padding: 15px !important;
+  }
+  
+  /* Mobile grid adjustments */
+  .mobile-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  
+  /* Mobile select improvements */
+  select {
+    font-size: 14px !important;
+    padding: 12px 10px !important;
+  }
+  
+  /* Mobile button improvements */
+  button {
+    font-size: 14px !important;
+    padding: 12px 16px !important;
+  }
+  
+  /* Mobile text adjustments */
+  h1 {
+    font-size: 1.8rem !important;
+  }
+  
+  h2 {
+    font-size: 1.3rem !important;
+  }
+  
+  p {
+    font-size: 0.9rem !important;
+  }
+  
+  /* Charts mobile adjustments */
+  .charts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+  
+  .chart-container {
+    height: 250px !important;
+  }
+  
+  /* Analysis section mobile adjustments */
+  .analysis-section {
+    margin-top: 20px !important;
+    padding: 20px !important;
+  }
+  
+  .analysis-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  
+  .chart-wrapper {
+    height: 250px !important;
+    padding: 15px !important;
+  }
+  
+  .analysis-summary {
+    padding: 15px !important;
+  }
+  
+  .summary-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+  
+  /* Summary cards mobile adjustments */
+  .summary-card {
+    padding: 15px !important;
+    margin-bottom: 10px !important;
+  }
+  
+  .summary-title {
+    font-size: 1rem !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .summary-content {
+    font-size: 0.9rem !important;
+    line-height: 1.6 !important;
+  }
+  
+  .summary-item {
+    margin-bottom: 6px !important;
+  }
+  
+  .summary-badge {
+    font-size: 0.8rem !important;
+    padding: 1px 4px !important;
+  }
+}
+
+/* Tablet Responsive Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  body {
+    font-size: 16px;
+  }
+  
+  body::before {
+    font-size: 20vw;
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { 
+    opacity: 0; 
+    transform: translateX(-30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes slideInRight {
+  from { 
+    opacity: 0; 
+    transform: translateX(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
+/* Animation Classes */
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.6s ease-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.6s ease-out;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+
+
+/* Custom Select Styles */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  background-size: 16px;
+  padding-left: 40px !important;
+  transition: all 0.3s ease;
+}
+
+select:focus {
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2);
+}
+
+select option {
+  background-color: #1a472a !important;
+  color: white !important;
+  padding: 12px 16px !important;
+  border: none !important;
+}
+
+select option:hover {
+  background-color: rgba(74, 222, 128, 0.2) !important;
+}
+
+select option:checked {
+  background-color: rgba(74, 222, 128, 0.3) !important;
+  color: #4ade80 !important;
+}
+
+/* Result Status Indicators */
+.status-excellent {
+  color: #10b981 !important;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.status-good {
+  color: #f59e0b !important;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.status-needs-improvement {
+  color: #ef4444 !important;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+/* Hover Effects */
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-glow {
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+}

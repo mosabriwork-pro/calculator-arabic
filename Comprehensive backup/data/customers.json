@@ -1,0 +1,55 @@
+{
+  "talal200265@gmail.com": {
+    "lastActivity": "٢‏/٨‏/٢٠٢٥، ٥:٥٩:١٩ م",
+    "lastUpdated": "2025-08-04T14:56:52.052Z",
+    "accessCodeSent": true,
+    "accessCode": "BE24EC7A",
+    "email": "talal200265@gmail.com",
+    "registrationDate": "٠٤/٠٨/٢٠٢٥",
+    "usageCount": 0,
+    "status": "active",
+    "subscriptionStart": "٠٤/٠٨/٢٠٢٥",
+    "subscriptionEnd": "٠٤/٠٨/٢٠٢٦",
+    "isExpired": false
+  },
+  "aassaassaaee.2001@icloud.com": {
+    "lastLogin": "٤‏/٨‏/٢٠٢٥، ٤:١٤:٣١ م",
+    "isOnline": true,
+    "sessionStart": "٣‏/٨‏/٢٠٢٥، ١:٢١:٣٦ م",
+    "currentPage": "حاسبة التغذية",
+    "email": "aassaassaaee.2001@icloud.com",
+    "lastActivity": "٤‏/٨‏/٢٠٢٥، ٤:١٤:٣١ م",
+    "lastUpdated": "2025-08-04T13:14:31.571Z",
+    "registrationDate": "٠٤/٠٨/٢٠٢٥",
+    "usageCount": 2,
+    "status": "active",
+    "lastSeen": "٣‏/٨‏/٢٠٢٥، ١:٢٢:٠٢ م",
+    "subscriptionStart": "٠٤/٠٨/٢٠٢٥",
+    "subscriptionEnd": "٠٤/٠٨/٢٠٢٦"
+  },
+  "test.inactive@example.com": {
+    "lastLogin": "٣‏/٨‏/٢٠٢٥، ٢:٠٠:٠٠ م",
+    "email": "test.inactive@example.com",
+    "lastActivity": "٣‏/٨‏/٢٠٢٥، ٢:٠٠:٠٠ م",
+    "lastUpdated": "2025-08-03T11:00:00.000Z",
+    "registrationDate": "٠٤/٠٨/٢٠٢٥",
+    "usageCount": 3,
+    "status": "inactive",
+    "accessCodeSent": true,
+    "subscriptionStart": "٠٤/٠٨/٢٠٢٥",
+    "subscriptionEnd": "٠٤/٠٨/٢٠٢٦",
+    "isExpired": false
+  },
+  "test.expired@example.com": {
+    "email": "test.expired@example.com",
+    "registrationDate": "٠٣/٠٨/٢٠٢٥",
+    "subscriptionStart": "٠٣/٠٨/٢٠٢٥",
+    "subscriptionEnd": "٠٣/٠٨/٢٠٢٥",
+    "status": "active",
+    "usageCount": 0,
+    "lastActivity": "٤‏/٨‏/٢٠٢٥، ٦:٢٢:٢٩ م",
+    "lastUpdated": "2025-08-04T15:22:29.300Z",
+    "accessCodeSent": true,
+    "isExpired": false
+  }
+}
