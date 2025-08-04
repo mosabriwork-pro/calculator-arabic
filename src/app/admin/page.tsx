@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 
@@ -28,6 +29,7 @@ interface CustomerData {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [adminEmail, setAdminEmail] = useState('')
   const [adminPassword, setAdminPassword] = useState('')
@@ -49,6 +51,38 @@ export default function AdminDashboard() {
   const [newEmail, setNewEmail] = useState('')
   const [newCode, setNewCode] = useState('')
   const [isLoadingCodes, setIsLoadingCodes] = useState(false)
+
+  // التحقق من تسجيل الدخول
+  useEffect(() => {
+    const checkAuth = () => {
+      if (typeof window !== 'undefined') {
+        const isLoggedIn = localStorage.getItem('isLoggedIn')
+        const loginTime = localStorage.getItem('loginTime')
+        
+        // التحقق من وجود تسجيل دخول صالح
+        if (!isLoggedIn || !loginTime) {
+          router.push('/login')
+          return
+        }
+        
+        // التحقق من انتهاء صلاحية الجلسة (24 ساعة)
+        const loginTimestamp = parseInt(loginTime)
+        const currentTime = Date.now()
+        const sessionDuration = 24 * 60 * 60 * 1000 // 24 ساعة
+        
+        if (currentTime - loginTimestamp > sessionDuration) {
+          // انتهت صلاحية الجلسة
+          localStorage.removeItem('isLoggedIn')
+          localStorage.removeItem('loginTime')
+          localStorage.removeItem('userEmail')
+          router.push('/login')
+          return
+        }
+      }
+    }
+    
+    checkAuth()
+  }, [router])
 
   // Check if admin is already logged in
   useEffect(() => {
@@ -192,8 +226,12 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     setIsLoggedIn(false)
     localStorage.removeItem('adminSession')
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('loginTime')
+    localStorage.removeItem('userEmail')
     setAdminEmail('')
     setAdminPassword('')
+    router.push('/login')
   }
 
   // Show login form if not logged in
