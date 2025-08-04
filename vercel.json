@@ -6,11 +6,12 @@
     "www.mosabri.top"
   ],
   "redirects": [
-    {
-      "source": "/",
-      "destination": "https://mosabri.top",
-      "permanent": true
-    }
+    // إزالة التوجيه الذي يسبب حلقة لا نهائية
+    // {
+    //   "source": "/",
+    //   "destination": "https://mosabri.top",
+    //   "permanent": true
+    // }
   ],
   "headers": [
     {

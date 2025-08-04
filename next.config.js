@@ -41,11 +41,12 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      {
-        source: '/',
-        destination: 'https://mosabri.top',
-        permanent: true,
-      },
+      // إزالة التوجيه الذي يسبب حلقة لا نهائية
+      // {
+      //   source: '/',
+      //   destination: 'https://mosabri.top',
+      //   permanent: true,
+      // },
     ]
   },
   env: {
