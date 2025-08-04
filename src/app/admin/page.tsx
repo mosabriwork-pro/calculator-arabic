@@ -93,7 +93,8 @@ export default function AdminDashboard() {
     if (adminSession === 'talal200265@gmail.com' && userEmail === 'talal200265@gmail.com') {
       setIsLoggedIn(true)
     } else if (userEmail && userEmail !== 'talal200265@gmail.com') {
-      // إذا كان المستخدم ليس المدير، توجيهه للصفحة الرئيسية
+      // إذا كان المستخدم ليس المدير، توجيهه للصفحة الرئيسية مع رسالة تحذير
+      alert('⚠️ غير مصرح لك بالوصول للوحة التحكم. سيتم توجيهك للصفحة الرئيسية.')
       router.push('/calculator')
     }
   }, [router])
@@ -245,6 +246,65 @@ export default function AdminDashboard() {
     setAdminEmail('')
     setAdminPassword('')
     router.push('/login')
+  }
+
+  // التحقق الإضافي من الأمان
+  const userEmail = localStorage.getItem('userEmail')
+  if (userEmail && userEmail !== 'talal200265@gmail.com') {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        fontFamily: 'Arial, sans-serif'
+      }}>
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px)',
+          border: '2px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: '25px',
+          padding: '40px',
+          width: '100%',
+          maxWidth: '500px',
+          textAlign: 'center',
+          color: 'white'
+        }}>
+          <div style={{ fontSize: '80px', marginBottom: '20px' }}>🚫</div>
+          <h1 style={{ fontSize: '2rem', marginBottom: '20px', fontWeight: 'bold' }}>
+            الوصول مرفوض
+          </h1>
+          <p style={{ fontSize: '1.2rem', marginBottom: '30px', lineHeight: '1.6' }}>
+            عذراً، غير مصرح لك بالوصول للوحة التحكم.<br/>
+            هذه الصفحة مخصصة للمدير فقط.
+          </p>
+          <button
+            onClick={() => router.push('/calculator')}
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '12px',
+              padding: '15px 30px',
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+            }}
+          >
+            العودة للصفحة الرئيسية
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // Show login form if not logged in
