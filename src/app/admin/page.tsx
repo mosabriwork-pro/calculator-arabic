@@ -86,22 +86,24 @@ export default function AdminDashboard() {
 
   // Check if admin is already logged in
   useEffect(() => {
-    const adminSession = localStorage.getItem('adminSession')
-    const userEmail = localStorage.getItem('userEmail')
-    
-    // التحقق من أن المستخدم هو المدير المصرح له فقط
-    if (adminSession === 'talal200265@gmail.com' && userEmail === 'talal200265@gmail.com') {
-      setIsLoggedIn(true)
-    } else if (userEmail && userEmail !== 'talal200265@gmail.com') {
-      // إذا كان المستخدم ليس المدير، توجيهه للصفحة الرئيسية مع رسالة تحذير
-      alert('⚠️ غير مصرح لك بالوصول للوحة التحكم. سيتم توجيهك للصفحة الرئيسية.')
-      router.push('/calculator')
+    if (typeof window !== 'undefined') {
+      const adminSession = localStorage.getItem('adminSession')
+      const userEmail = localStorage.getItem('userEmail')
+      
+      // التحقق من أن المستخدم هو المدير المصرح له فقط
+      if (adminSession === 'talal200265@gmail.com' && userEmail === 'talal200265@gmail.com') {
+        setIsLoggedIn(true)
+      } else if (userEmail && userEmail !== 'talal200265@gmail.com') {
+        // إذا كان المستخدم ليس المدير، توجيهه للصفحة الرئيسية مع رسالة تحذير
+        alert('⚠️ غير مصرح لك بالوصول للوحة التحكم. سيتم توجيهك للصفحة الرئيسية.')
+        router.push('/calculator')
+      }
     }
   }, [router])
 
   // Load email records from localStorage on component mount
   useEffect(() => {
-    if (!isLoggedIn) return
+    if (!isLoggedIn || typeof window === 'undefined') return
     
     const savedRecords = localStorage.getItem('emailRecords')
     if (savedRecords) {
@@ -200,7 +202,7 @@ export default function AdminDashboard() {
 
   // Save email records to localStorage whenever they change
   useEffect(() => {
-    if (!isLoggedIn) return
+    if (!isLoggedIn || typeof window === 'undefined') return
     localStorage.setItem('emailRecords', JSON.stringify(emailRecords))
   }, [emailRecords, isLoggedIn])
 
@@ -230,8 +232,10 @@ export default function AdminDashboard() {
     
     if (adminEmail === 'talal200265@gmail.com' && adminPassword === 'admin123') {
       setIsLoggedIn(true)
-      localStorage.setItem('adminSession', adminEmail)
-      localStorage.setItem('userEmail', adminEmail)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('adminSession', adminEmail)
+        localStorage.setItem('userEmail', adminEmail)
+      }
     } else {
       setLoginError('بيانات الدخول غير صحيحة')
     }
@@ -239,17 +243,19 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     setIsLoggedIn(false)
-    localStorage.removeItem('adminSession')
-    localStorage.removeItem('isLoggedIn')
-    localStorage.removeItem('loginTime')
-    localStorage.removeItem('userEmail')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('adminSession')
+      localStorage.removeItem('isLoggedIn')
+      localStorage.removeItem('loginTime')
+      localStorage.removeItem('userEmail')
+    }
     setAdminEmail('')
     setAdminPassword('')
     router.push('/login')
   }
 
   // التحقق الإضافي من الأمان
-  const userEmail = localStorage.getItem('userEmail')
+  const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null
   if (userEmail && userEmail !== 'talal200265@gmail.com') {
     return (
       <div style={{
@@ -748,7 +754,7 @@ export default function AdminDashboard() {
         setRecentEmails(prev => [email, ...prev.slice(0, 4)]) // Keep last 5 emails
         
         // Store the access code in localStorage for validation
-        if (data.accessCode && data.email) {
+        if (data.accessCode && data.email && typeof window !== 'undefined') {
           const validAccessCodes = JSON.parse(localStorage.getItem('validAccessCodes') || '{}')
           validAccessCodes[data.email] = data.accessCode
           localStorage.setItem('validAccessCodes', JSON.stringify(validAccessCodes))
@@ -818,7 +824,7 @@ export default function AdminDashboard() {
           
           // Store the access code in localStorage for validation
           const data = await response.json()
-          if (data.accessCode && data.email) {
+          if (data.accessCode && data.email && typeof window !== 'undefined') {
             const validAccessCodes = JSON.parse(localStorage.getItem('validAccessCodes') || '{}')
             validAccessCodes[data.email] = data.accessCode
             localStorage.setItem('validAccessCodes', JSON.stringify(validAccessCodes))
@@ -861,7 +867,9 @@ export default function AdminDashboard() {
   const clearRecords = () => {
     if (confirm('هل أنت متأكد من حذف جميع السجلات؟')) {
       setEmailRecords([])
-      localStorage.removeItem('emailRecords')
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('emailRecords')
+      }
     }
   }
 
@@ -916,6 +924,8 @@ export default function AdminDashboard() {
 
   // Function to show valid access codes
   const showValidAccessCodes = () => {
+    if (typeof window === 'undefined') return
+    
     const validAccessCodes = JSON.parse(localStorage.getItem('validAccessCodes') || '{}')
     const codesList = Object.entries(validAccessCodes)
       .map(([email, code]) => `${email}: ${code}`)
@@ -930,6 +940,8 @@ export default function AdminDashboard() {
 
   // Function to manually add access code for testing
   const addManualAccessCode = () => {
+    if (typeof window === 'undefined') return
+    
     const email = prompt('أدخل البريد الإلكتروني:')
     const code = prompt('أدخل رمز الوصول:')
     
