@@ -17,14 +17,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://calculator-mosabri.vercel.app'),
+  metadataBase: new URL('https://mosabri.top'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'حاسبة لاعب كرة القدم - خطتك الغذائية الاحترافية',
     description: 'حاسبة متقدمة لتخطيط النظام الغذائي للاعبين كرة القدم. احصل على خطة غذائية مخصصة لتحقيق أهدافك الرياضية.',
-    url: 'https://calculator-mosabri.vercel.app',
+    url: 'https://mosabri.top',
     siteName: 'حاسبة موصبري',
     images: [
       {
@@ -86,7 +86,7 @@ export default function RootLayout({
               "@type": "WebApplication",
               "name": "حاسبة لاعب كرة القدم",
               "description": "حاسبة متقدمة لتخطيط النظام الغذائي للاعبين كرة القدم",
-              "url": "https://calculator-mosabri.vercel.app",
+              "url": "https://mosabri.top",
               "applicationCategory": "SportsApplication",
               "operatingSystem": "Web Browser",
               "offers": {

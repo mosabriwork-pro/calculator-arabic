@@ -4,7 +4,7 @@ const nextConfig = {
     optimizeCss: false
   },
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'mosabri.top', 'www.mosabri.top'],
   },
   async headers() {
     return [
@@ -23,6 +23,10 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
+          {
+            key: 'X-Domain',
+            value: 'mosabri.top',
+          },
         ],
       },
     ]
@@ -32,6 +36,15 @@ const nextConfig = {
       {
         source: '/api/:path*',
         destination: '/api/:path*',
+      },
+    ]
+  },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: 'https://mosabri.top',
+        permanent: true,
       },
     ]
   },

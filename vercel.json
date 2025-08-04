@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "name": "calculator-arabic",
+  "domains": [
+    "mosabri.top",
+    "www.mosabri.top"
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://mosabri.top",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
+} 
