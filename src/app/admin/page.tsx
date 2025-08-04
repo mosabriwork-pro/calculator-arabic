@@ -18,10 +18,13 @@ interface CustomerData {
   registrationDate: string
   lastActivity: string
   usageCount: number
-  status: 'active' | 'inactive' | 'banned'
+  status: 'active' | 'inactive' | 'banned' | 'expired'
   lastLogin?: string
   accessCodeSent?: boolean
   lastUpdated?: string
+  subscriptionStart?: string
+  subscriptionEnd?: string
+  isExpired?: boolean
 }
 
 export default function AdminDashboard() {
@@ -86,6 +89,73 @@ export default function AdminDashboard() {
     
     loadCustomersFromAPI()
   }, [isLoggedIn])
+
+  // دالة للتحقق من انتهاء الاشتراك ونقل الحسابات المحظورة
+  const checkAndUpdateExpiredSubscriptions = async () => {
+    const now = new Date()
+    
+    for (const customer of customers) {
+      const subscriptionEnd = customer.subscriptionEnd || calculateSubscriptionEnd(customer.registrationDate)
+      if (subscriptionEnd && subscriptionEnd !== 'غير محدد') {
+        // تحويل التاريخ العربي إلى تاريخ JavaScript
+        const parseArabicDate = (dateString: string): Date => {
+          const jsDate = new Date(dateString)
+          if (!isNaN(jsDate.getTime())) {
+            return jsDate
+          }
+          
+          try {
+            const numbers = dateString.match(/[٠١٢٣٤٥٦٧٨٩]/g)
+            if (numbers) {
+              const arabicToEnglish = (arabic: string) => {
+                const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+                return arabicNumbers.indexOf(arabic).toString()
+              }
+              
+              const englishNumbers = numbers.map(arabicToEnglish).join('')
+              
+              if (englishNumbers.length >= 6) {
+                const day = parseInt(englishNumbers.substring(0, 2))
+                const month = parseInt(englishNumbers.substring(2, 4)) - 1
+                const year = parseInt(englishNumbers.substring(4, 8))
+                return new Date(year, month, day)
+              }
+            }
+          } catch (e) {
+            console.error('Error parsing Arabic date:', e)
+          }
+          
+          return new Date()
+        }
+        
+        const endDate = parseArabicDate(subscriptionEnd)
+        
+        // إذا انتهت صلاحية الاشتراك وحالة العميل نشط
+        if (now > endDate && customer.status === 'active') {
+          console.log(`حظر الحساب ${customer.email} بسبب انتهاء الاشتراك`)
+          await updateCustomerStatus(customer.email, 'banned')
+        }
+      }
+    }
+  }
+
+  // تشغيل فحص انتهاء الاشتراك عند تحميل العملاء
+  useEffect(() => {
+    if (customers.length > 0) {
+      checkAndUpdateExpiredSubscriptions()
+    }
+  }, [customers])
+
+  // فحص دوري لانتهاء الاشتراك كل دقيقة
+  useEffect(() => {
+    if (!isLoggedIn || customers.length === 0) return
+    
+    const interval = setInterval(() => {
+      checkAndUpdateExpiredSubscriptions()
+    }, 60000) // كل دقيقة
+    
+    return () => clearInterval(interval)
+  }, [isLoggedIn, customers])
 
   // Save email records to localStorage whenever they change
   useEffect(() => {
@@ -381,10 +451,53 @@ export default function AdminDashboard() {
     return hourStats
   }
 
-  const addCustomer = (email: string, name?: string) => {
-    // This function is now handled by the API endpoints
-    // The customer will be automatically added when they login or receive an access code
-    console.log('Customer activity detected:', email, name)
+  const addCustomer = async (email: string, name?: string) => {
+    try {
+      const today = new Date()
+      
+      // دالة لتحويل الأرقام الإنجليزية إلى العربية
+      const convertToArabicNumbers = (num: number): string => {
+        const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+        return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
+      }
+      
+      // تاريخ بداية الاشتراك (اليوم الحالي)
+      const month = today.getMonth() + 1
+      const day = today.getDate()
+      const year = today.getFullYear()
+      const subscriptionStart = `${convertToArabicNumbers(day).padStart(2, '٠')}/${convertToArabicNumbers(month).padStart(2, '٠')}/${convertToArabicNumbers(year)}`
+      
+      // تاريخ نهاية الاشتراك (بعد سنة)
+      const subscriptionEnd = new Date(today)
+      subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1)
+      const endMonth = subscriptionEnd.getMonth() + 1
+      const endDay = subscriptionEnd.getDate()
+      const endYear = subscriptionEnd.getFullYear()
+      const subscriptionEndFormatted = `${convertToArabicNumbers(endDay).padStart(2, '٠')}/${convertToArabicNumbers(endMonth).padStart(2, '٠')}/${convertToArabicNumbers(endYear)}`
+      
+      const response = await fetch('/api/customers', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email, 
+          name,
+          subscriptionStart: subscriptionStart,
+          subscriptionEnd: subscriptionEndFormatted,
+          isExpired: false,
+          status: 'active'
+        }),
+      })
+
+      if (response.ok) {
+        console.log('Customer added successfully:', email)
+      } else {
+        console.error('Failed to add customer:', email)
+      }
+    } catch (error) {
+      console.error('Error adding customer:', error)
+    }
   }
 
   const updateCustomerStatus = async (email: string, status: 'active' | 'inactive' | 'banned') => {
@@ -409,6 +522,96 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error updating customer status:', error)
+    }
+  }
+
+  // دالة لتحويل الأرقام الإنجليزية إلى العربية
+  const convertToArabicNumbers = (num: number): string => {
+    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+    return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
+  }
+
+  // دالة لتحويل التاريخ من ISO إلى تنسيق مقروء
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return 'غير محدد'
+    
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) {
+        // إذا كان التاريخ بالفعل بتنسيق عربي، استخدمه كما هو
+        return dateString
+      }
+      
+      const month = date.getMonth() + 1
+      const day = date.getDate()
+      const year = date.getFullYear()
+      
+      return `${convertToArabicNumbers(day).padStart(2, '٠')}/${convertToArabicNumbers(month).padStart(2, '٠')}/${convertToArabicNumbers(year)}`
+    } catch (error) {
+      return dateString
+    }
+  }
+
+  // دالة لإعادة تفعيل الحساب مع تحديث تاريخ الاشتراك
+  const reactivateCustomer = async (email: string) => {
+    try {
+      const today = new Date()
+      
+      // دالة لتحويل الأرقام الإنجليزية إلى العربية
+      const convertToArabicNumbers = (num: number): string => {
+        const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+        return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
+      }
+      
+      // تاريخ بداية الاشتراك بالتقويم الميلادي مع الأرقام العربية (اليوم الحالي)
+      const month = today.getMonth() + 1
+      const day = today.getDate()
+      const year = today.getFullYear()
+      const subscriptionStart = `${convertToArabicNumbers(day).padStart(2, '٠')}/${convertToArabicNumbers(month).padStart(2, '٠')}/${convertToArabicNumbers(year)}`
+      
+      // تاريخ نهاية الاشتراك (بعد سنة) بالتقويم الميلادي
+      const subscriptionEnd = new Date(today)
+      subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1)
+      const endMonth = subscriptionEnd.getMonth() + 1
+      const endDay = subscriptionEnd.getDate()
+      const endYear = subscriptionEnd.getFullYear()
+      const subscriptionEndFormatted = `${convertToArabicNumbers(endDay).padStart(2, '٠')}/${convertToArabicNumbers(endMonth).padStart(2, '٠')}/${convertToArabicNumbers(endYear)}`
+      
+      const response = await fetch('/api/customers', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email, 
+          status: 'active',
+          subscriptionStart: subscriptionStart,
+          subscriptionEnd: subscriptionEndFormatted,
+          isExpired: false
+        }),
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        // Update local state
+        setCustomers(prev => 
+          prev.map(c => c.email === email ? { 
+            ...c, 
+            status: 'active',
+            subscriptionStart: subscriptionStart,
+            subscriptionEnd: subscriptionEndFormatted,
+            isExpired: false
+          } : c)
+        )
+        alert(`تم إعادة تفعيل الحساب ${email} بنجاح\nتاريخ بداية الاشتراك الجديد: ${subscriptionStart}\nتاريخ نهاية الاشتراك: ${subscriptionEndFormatted}`)
+      } else {
+        console.error('Failed to reactivate customer:', data.error)
+        alert('فشل في إعادة تفعيل الحساب')
+      }
+    } catch (error) {
+      console.error('Error reactivating customer:', error)
+      alert('حدث خطأ في إعادة تفعيل الحساب')
     }
   }
 
@@ -980,6 +1183,165 @@ export default function AdminDashboard() {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
     }
     setNewCode(result)
+  }
+
+  // دالة للتحقق من انتهاء الاشتراك
+  const checkSubscriptionExpiry = (customer: CustomerData) => {
+    if (!customer.subscriptionEnd) return false
+    
+    const endDate = new Date(customer.subscriptionEnd)
+    const now = new Date()
+    const oneYearAfterExpiry = new Date(endDate)
+    oneYearAfterExpiry.setFullYear(oneYearAfterExpiry.getFullYear() + 1)
+    
+    // إذا مرت سنة على انتهاء الاشتراك
+    if (now > oneYearAfterExpiry) {
+      return true
+    }
+    
+    return false
+  }
+
+  // دالة لحساب تاريخ نهاية الاشتراك (سنة كاملة من تاريخ التسجيل)
+  const calculateSubscriptionEnd = (registrationDate: string) => {
+    if (!registrationDate) return ''
+    
+    try {
+      // دالة لتحويل الأرقام الإنجليزية إلى العربية
+      const convertToArabicNumbers = (num: number): string => {
+        const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+        return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
+      }
+      
+      // تحويل التاريخ العربي إلى تاريخ JavaScript
+      const parseArabicDate = (dateString: string): Date => {
+        // إذا كان التاريخ بالفعل بتنسيق JavaScript، استخدمه مباشرة
+        const jsDate = new Date(dateString)
+        if (!isNaN(jsDate.getTime())) {
+          return jsDate
+        }
+        
+        // محاولة تحويل التاريخ العربي
+        try {
+          // استخراج الأرقام من التاريخ العربي
+          const numbers = dateString.match(/[٠١٢٣٤٥٦٧٨٩]/g)
+          if (numbers) {
+            const arabicToEnglish = (arabic: string) => {
+              const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+              return arabicNumbers.indexOf(arabic).toString()
+            }
+            
+            const englishNumbers = numbers.map(arabicToEnglish).join('')
+            
+            // إذا كان التاريخ يحتوي على "هـ" فهو هجري، نحتاج تحويله إلى ميلادي
+            if (dateString.includes('هـ')) {
+              // تحويل التاريخ الهجري إلى ميلادي (تقريبي)
+              if (englishNumbers.length >= 6) {
+                const day = parseInt(englishNumbers.substring(0, 2))
+                const month = parseInt(englishNumbers.substring(2, 4))
+                const hijriYear = parseInt(englishNumbers.substring(4, 8))
+                
+                // تحويل تقريبي من الهجري إلى الميلادي (هجري + 579 = ميلادي تقريباً)
+                const gregorianYear = hijriYear + 579
+                
+                return new Date(gregorianYear, month - 1, day)
+              }
+            } else {
+              // تاريخ ميلادي عادي
+              if (englishNumbers.length >= 6) {
+                const day = parseInt(englishNumbers.substring(0, 2))
+                const month = parseInt(englishNumbers.substring(2, 4)) - 1 // JavaScript months are 0-based
+                const year = parseInt(englishNumbers.substring(4, 8))
+                return new Date(year, month, day)
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing Arabic date:', e)
+        }
+        
+        // إذا فشل التحويل، استخدم التاريخ الحالي
+        return new Date()
+      }
+      
+      // تحويل التاريخ العربي إلى تاريخ JavaScript
+      const regDate = parseArabicDate(registrationDate)
+      const endDate = new Date(regDate)
+      endDate.setFullYear(endDate.getFullYear() + 1)
+      
+      const month = endDate.getMonth() + 1
+      const day = endDate.getDate()
+      const year = endDate.getFullYear()
+      
+      // إرجاع التاريخ بالتقويم الميلادي فقط (بدون هجري)
+      return `${convertToArabicNumbers(day).padStart(2, '٠')}/${convertToArabicNumbers(month).padStart(2, '٠')}/${convertToArabicNumbers(year)}`
+    } catch (error) {
+      console.error('Error calculating subscription end:', error)
+      return 'غير محدد'
+    }
+  }
+
+  // دالة لتحديث حالة الاشتراك
+  const updateSubscriptionStatus = async (email: string, subscriptionStart: string, subscriptionEnd: string) => {
+    try {
+      const response = await fetch('/api/customers', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email, 
+          subscriptionStart, 
+          subscriptionEnd,
+          isExpired: checkSubscriptionExpiry({ email, subscriptionEnd } as CustomerData)
+        }),
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        // Update local state
+        setCustomers(prev => 
+          prev.map(c => c.email === email ? { 
+            ...c, 
+            subscriptionStart, 
+            subscriptionEnd,
+            isExpired: checkSubscriptionExpiry({ ...c, subscriptionEnd })
+          } : c)
+        )
+      } else {
+        console.error('Failed to update subscription:', data.error)
+      }
+    } catch (error) {
+      console.error('Error updating subscription:', error)
+    }
+  }
+
+  // دالة لحذف الحساب نهائياً
+  const deleteCustomer = async (email: string) => {
+    try {
+      const response = await fetch('/api/customers', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        // Remove from local state
+        setCustomers(prev => prev.filter(c => c.email !== email))
+        alert(`✅ تم حذف الحساب ${email} نهائياً`)
+      } else {
+        console.error('Failed to delete customer:', data.error)
+        alert('❌ فشل في حذف الحساب')
+      }
+    } catch (error) {
+      console.error('Error deleting customer:', error)
+      alert('❌ خطأ في الاتصال بالخادم')
+    }
   }
 
   const generateBrochurePDF = async () => {
@@ -1900,6 +2262,70 @@ export default function AdminDashboard() {
                         👥 إدارة العملاء
                       </h2>
                       
+                      {/* إحصائيات سريعة */}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-around',
+                        marginBottom: '25px',
+                        gap: '15px'
+                      }}>
+                        <div style={{
+                          background: 'rgba(34, 197, 94, 0.2)',
+                          border: '1px solid rgba(34, 197, 94, 0.3)',
+                          borderRadius: '10px',
+                          padding: '15px',
+                          textAlign: 'center',
+                          flex: 1
+                        }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#22c55e' }}>
+                            {customers.filter(c => c.status === 'active').length}
+                          </div>
+                          <div style={{ fontSize: '0.9rem', color: '#9ca3af' }}>نشط</div>
+                        </div>
+                        
+                        <div style={{
+                          background: 'rgba(245, 158, 11, 0.2)',
+                          border: '1px solid rgba(245, 158, 11, 0.3)',
+                          borderRadius: '10px',
+                          padding: '15px',
+                          textAlign: 'center',
+                          flex: 1
+                        }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#f59e0b' }}>
+                            {customers.filter(c => c.status === 'inactive').length}
+                          </div>
+                          <div style={{ fontSize: '0.9rem', color: '#9ca3af' }}>غير نشط</div>
+                        </div>
+                        
+                        <div style={{
+                          background: 'rgba(239, 68, 68, 0.2)',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          borderRadius: '10px',
+                          padding: '15px',
+                          textAlign: 'center',
+                          flex: 1
+                        }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ef4444' }}>
+                            {customers.filter(c => c.status === 'banned').length}
+                          </div>
+                          <div style={{ fontSize: '0.9rem', color: '#9ca3af' }}>محظور</div>
+                        </div>
+                        
+                        <div style={{
+                          background: 'rgba(139, 92, 246, 0.2)',
+                          border: '1px solid rgba(139, 92, 246, 0.3)',
+                          borderRadius: '10px',
+                          padding: '15px',
+                          textAlign: 'center',
+                          flex: 1
+                        }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#8b5cf6' }}>
+                            {customers.filter(c => c.status === 'expired').length}
+                          </div>
+                          <div style={{ fontSize: '0.9rem', color: '#9ca3af' }}>منتهي الصلاحية</div>
+                        </div>
+                      </div>
+                      
                       <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -1962,98 +2388,229 @@ export default function AdminDashboard() {
                         </button>
               </div>
 
-              {customers.length === 0 ? (
-                <div style={{
+              {/* الحسابات النشطة */}
+              <div style={{
+                background: 'rgba(34, 197, 94, 0.1)',
+                border: '2px solid rgba(34, 197, 94, 0.3)',
+                borderRadius: '15px',
+                padding: '20px',
+                marginBottom: '25px'
+              }}>
+                <h3 style={{
+                  color: '#22c55e',
+                  fontSize: '1.3rem',
+                  margin: '0 0 15px 0',
                   textAlign: 'center',
-                  padding: '40px',
+                  fontWeight: 'bold'
+                }}>
+                  ✅ الحسابات النشطة
+                </h3>
+                
+                <p style={{
                   color: '#9ca3af',
-                  fontSize: '1.1rem'
+                  fontSize: '0.9rem',
+                  margin: '0 0 15px 0',
+                  textAlign: 'center'
                 }}>
-                  📭 لا توجد عملاء بعد
-                </div>
-              ) : (
-                <div style={{
-                  maxHeight: '400px',
-                  overflowY: 'auto',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px'
+                  العملاء الذين يمكنهم الوصول إلى النظام واستخدام الحاسبة
+                </p>
+
+                {customers.filter(c => c.status === 'active').length === 0 ? (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '20px',
+                    color: '#9ca3af',
+                    fontSize: '1rem'
+                  }}>
+                    📭 لا توجد حسابات نشطة
+                  </div>
+                ) : (
+                  <div style={{
+                    maxHeight: '300px',
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                  }}>
+                    {customers.filter(c => c.status === 'active').map((customer, index) => (
+                      <div key={index} style={{
+                        background: 'rgba(34, 197, 94, 0.1)',
+                        border: '1px solid rgba(34, 197, 94, 0.2)',
+                        borderRadius: '12px',
+                        padding: '15px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <div>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '1rem', fontWeight: '600', color: '#22c55e' }}>{customer.name || customer.email}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>البريد: {customer.email}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>تاريخ الاشتراك: {customer.registrationDate}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>تاريخ نهاية الاشتراك: {customer.subscriptionEnd || calculateSubscriptionEnd(customer.registrationDate)}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>آخر نشاط: {formatDate(customer.lastActivity)}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>آخر تسجيل دخول: {customer.lastLogin ? formatDate(customer.lastLogin) : 'لم يسجل دخول بعد'}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>عدد الاستخدامات: {customer.usageCount}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>
+                            رمز الوصول: {permanentCodes[customer.email] || 'غير محدد'}
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button
+                            onClick={() => {
+                              if (confirm(`هل أنت متأكد من حذف الحساب ${customer.email} نهائياً؟\n\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+                                deleteCustomer(customer.email)
+                              }
+                            }}
+                            style={{
+                              background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              fontSize: '0.8rem',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            🗑️ حذف
+                          </button>
+                          <button
+                            onClick={() => updateCustomerStatus(customer.email, 'banned')}
+                            style={{
+                              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              fontSize: '0.8rem',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            🚫 حظر
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* الحسابات المحظورة */}
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '2px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '15px',
+                padding: '20px',
+                marginBottom: '25px'
+              }}>
+                <h3 style={{
+                  color: '#ef4444',
+                  fontSize: '1.3rem',
+                  margin: '0 0 15px 0',
+                  textAlign: 'center',
+                  fontWeight: 'bold'
                 }}>
-                  {customers.map((customer, index) => (
-                    <div key={index} style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '12px',
-                      padding: '15px',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}>
-                      <div>
-                        <p style={{ margin: '0 0 5px 0', fontSize: '1rem', fontWeight: '600' }}>{customer.name || customer.email}</p>
-                        <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>البريد: {customer.email}</p>
-                        <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>تاريخ التسجيل: {customer.registrationDate}</p>
-                        <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>آخر نشاط: {customer.lastActivity}</p>
-                        <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>آخر تسجيل دخول: {customer.lastLogin || 'لم يسجل دخول بعد'}</p>
-                        <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>عدد الاستخدامات: {customer.usageCount}</p>
-                        <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>
-                          رمز الوصول: {customer.accessCodeSent ? '✅ تم الإرسال' : '❌ لم يتم الإرسال'}
-                        </p>
+                  🚫 الحسابات المحظورة
+                </h3>
+                
+                <p style={{
+                  color: '#9ca3af',
+                  fontSize: '0.9rem',
+                  margin: '0 0 15px 0',
+                  textAlign: 'center'
+                }}>
+                  العملاء الذين انتهت صلاحية اشتراكهم ولا يستطيعون الدخول للآلة
+                </p>
+
+                {customers.filter(c => c.status === 'banned').length === 0 ? (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '20px',
+                    color: '#9ca3af',
+                    fontSize: '1rem'
+                  }}>
+                    📭 لا توجد حسابات محظورة
+                  </div>
+                ) : (
+                  <div style={{
+                    maxHeight: '300px',
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                  }}>
+                    {customers.filter(c => c.status === 'banned').map((customer, index) => (
+                      <div key={index} style={{
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                        borderRadius: '12px',
+                        padding: '15px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <div>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '1rem', fontWeight: '600', color: '#ef4444' }}>{customer.name || customer.email}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>البريد: {customer.email}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>تاريخ الاشتراك: {customer.registrationDate}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>تاريخ نهاية الاشتراك: {customer.subscriptionEnd || calculateSubscriptionEnd(customer.registrationDate)}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>آخر نشاط: {formatDate(customer.lastActivity)}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>آخر تسجيل دخول: {customer.lastLogin ? formatDate(customer.lastLogin) : 'لم يسجل دخول بعد'}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>عدد الاستخدامات: {customer.usageCount}</p>
+                          <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#9ca3af' }}>
+                            رمز الوصول: {permanentCodes[customer.email] || 'غير محدد'}
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button
+                            onClick={() => reactivateCustomer(customer.email)}
+                            style={{
+                              background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              fontSize: '0.8rem',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            ✅ إعادة التفعيل
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm(`هل أنت متأكد من حذف الحساب ${customer.email} نهائياً؟\n\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+                                deleteCustomer(customer.email)
+                              }
+                            }}
+                            style={{
+                              background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              fontSize: '0.8rem',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            🗑️ حذف
+                          </button>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <button
-                          onClick={() => updateCustomerStatus(customer.email, 'active')}
-                          style={{
-                            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            fontSize: '0.8rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                          }}
-                        >
-                          ✅ نشط
-                        </button>
-                        <button
-                          onClick={() => updateCustomerStatus(customer.email, 'inactive')}
-                          style={{
-                            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            fontSize: '0.8rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                          }}
-                        >
-                          🔄 غير نشط
-                        </button>
-                        <button
-                          onClick={() => updateCustomerStatus(customer.email, 'banned')}
-                          style={{
-                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            fontSize: '0.8rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                          }}
-                        >
-                          🚫 محظور
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
+
+
+
+
             </div>
           </>
         ) : activeTab === 'speed-test' ? (

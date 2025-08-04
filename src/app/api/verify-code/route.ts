@@ -43,13 +43,24 @@ const saveCustomer = (email: string, customerData: any) => {
       ...customers[email],
       ...customerData,
       email,
-      lastActivity: new Date().toLocaleString('ar-SA'),
+      lastActivity: new Date().toISOString(),
       lastUpdated: new Date().toISOString()
     }
     
     // If this is a new customer, set registration date
     if (!customers[email].registrationDate) {
-      customers[email].registrationDate = new Date().toLocaleString('ar-SA')
+      const today = new Date()
+      const month = today.getMonth() + 1
+      const day = today.getDate()
+      const year = today.getFullYear()
+      
+      // تحويل الأرقام إلى العربية
+      const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+      const convertToArabic = (num: number) => {
+        return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
+      }
+      
+      customers[email].registrationDate = `${convertToArabic(day).padStart(2, '٠')}/${convertToArabic(month).padStart(2, '٠')}/${convertToArabic(year)}`
       customers[email].usageCount = 0
       customers[email].status = 'active'
     }
@@ -229,9 +240,83 @@ export async function POST(request: NextRequest) {
     console.log(`Code verification for ${email}: ${isValid ? 'valid' : 'invalid'} in ${duration}ms`)
 
     if (isValid) {
+      // Check customer status before allowing login
+      const customers = loadCustomers()
+      const customer = customers[email]
+      
+      if (customer && customer.status === 'banned') {
+        return NextResponse.json({
+          success: false,
+          isValid: false,
+          error: 'تم حظر هذا الحساب من الوصول إلى النظام. يرجى التواصل مع الإدارة.',
+          duration
+        }, { status: 403 })
+      }
+      
+      if (customer && customer.status === 'inactive') {
+        return NextResponse.json({
+          success: false,
+          isValid: false,
+          error: 'تم إيقاف هذا الحساب مؤقتاً. يرجى التواصل مع الإدارة لتفعيله.',
+          duration
+        }, { status: 403 })
+      }
+
+      // Check subscription expiry
+      if (customer && customer.subscriptionEnd) {
+        // تحويل التاريخ العربي إلى تاريخ JavaScript
+        const parseArabicDate = (dateString: string): Date => {
+          const jsDate = new Date(dateString)
+          if (!isNaN(jsDate.getTime())) {
+            return jsDate
+          }
+          
+          try {
+            const numbers = dateString.match(/[٠١٢٣٤٥٦٧٨٩]/g)
+            if (numbers) {
+              const arabicToEnglish = (arabic: string) => {
+                const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+                return arabicNumbers.indexOf(arabic).toString()
+              }
+              
+              const englishNumbers = numbers.map(arabicToEnglish).join('')
+              
+              if (englishNumbers.length >= 6) {
+                const day = parseInt(englishNumbers.substring(0, 2))
+                const month = parseInt(englishNumbers.substring(2, 4)) - 1
+                const year = parseInt(englishNumbers.substring(4, 8))
+                return new Date(year, month, day)
+              }
+            }
+          } catch (e) {
+            console.error('Error parsing Arabic date:', e)
+          }
+          
+          return new Date()
+        }
+        
+        const endDate = parseArabicDate(customer.subscriptionEnd)
+        const now = new Date()
+        
+        // إذا انتهت صلاحية الاشتراك
+        if (now > endDate) {
+          // Update customer status to banned
+          customer.status = 'banned'
+          customer.isExpired = true
+          saveCustomer(email, { status: 'banned', isExpired: true })
+          
+          return NextResponse.json({
+            success: false,
+            isValid: false,
+            error: 'انتهت صلاحية الاشتراك. تم حظر الحساب تلقائياً. يرجى التواصل مع الإدارة لتجديد الاشتراك.',
+            duration
+          }, { status: 403 })
+        }
+      }
+
       // Record successful login to persistent storage
       saveCustomer(email, { 
-        lastLogin: new Date().toLocaleString('ar-SA')
+        lastLogin: new Date().toISOString()
       })
       return NextResponse.json({
         success: true,

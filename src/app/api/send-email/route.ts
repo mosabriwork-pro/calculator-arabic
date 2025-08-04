@@ -81,11 +81,40 @@ const saveCustomer = (email: string, customerData: any) => {
       lastUpdated: new Date().toISOString()
     }
     
-    // If this is a new customer, set registration date
+    // If this is a new customer, set registration date and subscription dates
     if (!customers[email].registrationDate) {
-      customers[email].registrationDate = new Date().toLocaleString('ar-SA')
+      const today = new Date()
+      
+      // دالة لتحويل الأرقام الإنجليزية إلى العربية
+      const convertToArabicNumbers = (num: number): string => {
+        const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+        return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
+      }
+      
+      // تاريخ التسجيل (اليوم الحالي)
+      const month = today.getMonth() + 1
+      const day = today.getDate()
+      const year = today.getFullYear()
+      const registrationDate = `${convertToArabicNumbers(day).padStart(2, '٠')}/${convertToArabicNumbers(month).padStart(2, '٠')}/${convertToArabicNumbers(year)}`
+      
+      customers[email].registrationDate = registrationDate
       customers[email].usageCount = 0
       customers[email].status = 'active'
+      
+      // إذا لم يتم تحديد تواريخ الاشتراك، استخدم التواريخ الممررة أو احسبها
+      if (!customers[email].subscriptionStart) {
+        customers[email].subscriptionStart = registrationDate
+      }
+      
+              if (!customers[email].subscriptionEnd) {
+          const subscriptionEnd = new Date(today)
+          subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1)
+          const endMonth = subscriptionEnd.getMonth() + 1
+          const endDay = subscriptionEnd.getDate()
+          const endYear = subscriptionEnd.getFullYear()
+          const subscriptionEndFormatted = `${convertToArabicNumbers(endDay).padStart(2, '٠')}/${convertToArabicNumbers(endMonth).padStart(2, '٠')}/${convertToArabicNumbers(endYear)}`
+          customers[email].subscriptionEnd = subscriptionEndFormatted
+        }
     }
     
     fs.writeFileSync(CUSTOMERS_FILE_PATH, JSON.stringify(customers, null, 2))
@@ -349,12 +378,37 @@ export async function POST(request: NextRequest) {
     await transporter.sendMail(mailOptions)
 
     // Record customer activity
+    const today = new Date()
+    
+    // دالة لتحويل الأرقام الإنجليزية إلى العربية
+    const convertToArabicNumbers = (num: number): string => {
+      const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+      return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
+    }
+    
+    // تاريخ بداية الاشتراك (اليوم الحالي)
+    const month = today.getMonth() + 1
+    const day = today.getDate()
+    const year = today.getFullYear()
+    const subscriptionStart = `${convertToArabicNumbers(day).padStart(2, '٠')}/${convertToArabicNumbers(month).padStart(2, '٠')}/${convertToArabicNumbers(year)}`
+    
+    // تاريخ نهاية الاشتراك (بعد سنة)
+    const subscriptionEnd = new Date(today)
+    subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1)
+    const endMonth = subscriptionEnd.getMonth() + 1
+    const endDay = subscriptionEnd.getDate()
+    const endYear = subscriptionEnd.getFullYear()
+    const subscriptionEndFormatted = `${convertToArabicNumbers(endDay).padStart(2, '٠')}/${convertToArabicNumbers(endMonth).padStart(2, '٠')}/${convertToArabicNumbers(endYear)}`
+    
     saveCustomer(email, {
       lastActivity: new Date().toLocaleString('ar-SA'),
       lastUpdated: new Date().toISOString(),
       accessCodeSent: true,
       accessCode: accessCode,
-      email
+      email,
+      subscriptionStart: subscriptionStart,
+      subscriptionEnd: subscriptionEndFormatted,
+      isExpired: false
     })
 
     const duration = Date.now() - startTime

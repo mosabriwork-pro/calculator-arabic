@@ -65,14 +65,21 @@ const LoginPage = dynamic(() => Promise.resolve(() => {
           timestamp: new Date().toLocaleString('ar-SA'),
           type: 'login',
           status: 'failed',
-          details: 'فشل في تسجيل الدخول - رمز الوصول غير صحيح'
+          details: data.error || 'فشل في تسجيل الدخول'
         }
         
         const existingRecords = JSON.parse(localStorage.getItem('emailRecords') || '[]')
         existingRecords.unshift(loginRecord)
         localStorage.setItem('emailRecords', JSON.stringify(existingRecords.slice(0, 99)))
         
-        alert(`رمز الوصول غير صحيح!\n\nالبريد: ${email}\nالرمز المدخل: ${code}\n\nيرجى التأكد من الرمز المرسل إلى بريدك الإلكتروني`)
+        // Show appropriate error message
+        if (response.status === 403) {
+          // Account banned or inactive
+          alert(`${data.error}\n\nالبريد: ${email}\n\nيرجى التواصل مع الإدارة لحل المشكلة.`)
+        } else {
+          // Invalid code or other error
+          alert(`${data.error || 'رمز الوصول غير صحيح'}\n\nالبريد: ${email}\nالرمز المدخل: ${code}\n\nيرجى التأكد من الرمز المرسل إلى بريدك الإلكتروني`)
+        }
         setIsLoading(false)
       }
     } catch (error) {

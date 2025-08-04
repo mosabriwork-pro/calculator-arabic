@@ -354,10 +354,10 @@ const Calculator = dynamic(() => Promise.resolve(() => {
 
   // دالة إنشاء محتوى HTML للـ PDF
   const createPDFContent = () => {
-    const currentDate = new Date()
-    const hijriDate = currentDate.toLocaleDateString('ar-SA-u-ca-islamic')
-    const time = currentDate.toLocaleTimeString('ar-SA', { hour12: true })
-    
+      const currentDate = new Date()
+      const hijriDate = currentDate.toLocaleDateString('ar-SA-u-ca-islamic')
+      const time = currentDate.toLocaleTimeString('ar-SA', { hour12: true })
+      
     // Calculate all nutrition plans
     const bmr = 10 * playerData.weight + 6.25 * playerData.height - 5 * playerData.age + 5
     
@@ -947,58 +947,11 @@ const Calculator = dynamic(() => Promise.resolve(() => {
 
 
 
-  // دالة التصدير باستخدام صفحة الطباعة المخصصة
-  const exportToPrintPage = () => {
+  // دالة التصدير باستخدام الطباعة المباشرة
+  const exportToPrintPage = async () => {
     setIsExporting(true)
     try {
-      // حساب البيانات
-      const bmr = 10 * playerData.weight + 6.25 * playerData.height - 5 * playerData.age + 5
-      
-      const activityMultipliers = {
-        'كسول (بدون تمرين)': 1.2,
-        'نشاط خفيف (1-2 يوم تمرين اسبوعيا)': 1.375,
-        'نشاط متوسط (3-4 أيام تمرين اسبوعيا)': 1.55,
-        'نشاط عالي (5-6 أيام تمرين اسبوعيا)': 1.725,
-        'نشاط مكثف (تمرين يومي + نشاط بدني)': 1.9
-      }
-      
-      const positionMultipliers = {
-        'حارس مرمى': 1.1,
-        'مدافع': 1.15,
-        'محور': 1.2,
-        'جناح': 1.25,
-        'مهاجم': 1.3
-      }
-      
-      const tdee = bmr * (activityMultipliers[playerData.activityLevel as keyof typeof activityMultipliers] || 1.55) * (positionMultipliers[playerData.position as keyof typeof positionMultipliers] || 1.2)
-      
-      const maintenancePlan = {
-        calories: Math.round(tdee),
-        protein: Math.round(tdee * 0.25 / 4),
-        carbs: Math.round(tdee * 0.55 / 4),
-        fat: Math.round(tdee * 0.2 / 9),
-        water: Math.round(playerData.weight * 0.033)
-      }
-      
-      const weightGainPlan = {
-        calories: Math.round(tdee + 500),
-        protein: Math.round((tdee + 500) * 0.25 / 4),
-        carbs: Math.round((tdee + 500) * 0.55 / 4),
-        fat: Math.round((tdee + 500) * 0.2 / 9),
-        water: Math.round(playerData.weight * 0.033)
-      }
-      
-      const weightLossPlan = {
-        calories: Math.round(tdee - 500),
-        protein: Math.round((tdee - 500) * 0.3 / 4),
-        carbs: Math.round((tdee - 500) * 0.45 / 4),
-        fat: Math.round((tdee - 500) * 0.25 / 9),
-        water: Math.round(playerData.weight * 0.04)
-      }
-      
-      const idealWeight = calculateIdealWeight(playerData.height, playerData.position)
-      
-      // تجهيز البيانات للإرسال
+      // تجهيز بيانات التقرير
       const reportData = {
         name: playerData.name,
         age: playerData.age,
@@ -1006,18 +959,33 @@ const Calculator = dynamic(() => Promise.resolve(() => {
         currentWeight: playerData.weight,
         position: playerData.position,
         activityLevel: playerData.activityLevel,
-        country: 'السعودية', // يمكن تغييرها حسب الحاجة
-        calories: maintenancePlan.calories,
-        protein: maintenancePlan.protein,
-        carbs: maintenancePlan.carbs,
-        fat: maintenancePlan.fat,
-        water: maintenancePlan.water,
-        idealWeight: idealWeight.max,
-        weightGain: weightGainPlan,
-        maintenance: maintenancePlan,
-        weightLoss: weightLossPlan
+        country: 'السعودية', // يمكن إضافته لاحقاً
+        calories: nutritionPlan.calories,
+        protein: nutritionPlan.protein,
+        carbs: nutritionPlan.carbs,
+        fat: nutritionPlan.fat,
+        water: nutritionPlan.water,
+        idealWeight: nutritionPlan.idealWeight.min,
+        weightGain: {
+          calories: Math.round(nutritionPlan.calories * 1.1),
+          protein: Math.round(nutritionPlan.protein * 1.1),
+          carbs: Math.round(nutritionPlan.carbs * 1.1),
+          fat: Math.round(nutritionPlan.fat * 1.1)
+        },
+        maintenance: {
+          calories: nutritionPlan.calories,
+          protein: nutritionPlan.protein,
+          carbs: nutritionPlan.carbs,
+          fat: nutritionPlan.fat
+        },
+        weightLoss: {
+          calories: Math.round(nutritionPlan.calories * 0.9),
+          protein: Math.round(nutritionPlan.protein * 1.1),
+          carbs: Math.round(nutritionPlan.carbs * 0.8),
+          fat: Math.round(nutritionPlan.fat * 0.9)
+        }
       }
-      
+
       // تشفير البيانات وإرسالها إلى صفحة الطباعة
       const encodedData = encodeURIComponent(JSON.stringify(reportData))
       const printPageUrl = `/print-report?data=${encodedData}`
@@ -1027,9 +995,9 @@ const Calculator = dynamic(() => Promise.resolve(() => {
       
       setIsExporting(false)
     } catch (error) {
-      console.error('Error in print page export:', error)
-      alert('حدث خطأ أثناء إنشاء صفحة الطباعة. يرجى المحاولة مرة أخرى.')
+      console.error('خطأ في فتح صفحة التقرير:', error)
       setIsExporting(false)
+      alert('حدث خطأ أثناء فتح صفحة التقرير. يرجى المحاولة مرة أخرى.')
     }
   }
 

@@ -56,14 +56,7 @@ function PrintReportContent() {
     setIsLoading(false);
   }, [searchParams]);
 
-  useEffect(() => {
-    // Auto-print when page loads
-    if (!isLoading && data) {
-      setTimeout(() => {
-        window.print();
-      }, 1000);
-    }
-  }, [isLoading, data]);
+  // Remove auto-print functionality - let user manually trigger print
 
   if (isLoading) {
     return <div className="loading">جاري تحميل التقرير...</div>;
@@ -81,8 +74,18 @@ function PrintReportContent() {
     minute: '2-digit'
   });
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div className="print-report">
+      {/* Print Button - Only visible on screen */}
+      <div className="print-button-container">
+        <button onClick={handlePrint} className="print-button">
+          🖨️ طباعة التقرير
+        </button>
+      </div>
       {/* Page 1: Cover */}
       <div className="page cover-page">
         <div className="cover-background"></div>
@@ -1150,6 +1153,43 @@ function PrintReportContent() {
           .no-print {
             display: none !important;
           }
+
+          /* Hide print button when printing */
+          .print-button-container {
+            display: none !important;
+          }
+        }
+
+        /* Print Button Styles */
+        .print-button-container {
+          position: fixed;
+          top: 20px;
+          left: 20px;
+          z-index: 1000;
+        }
+
+        .print-button {
+          background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+          transition: all 0.3s ease;
+          font-family: 'Cairo', sans-serif;
+        }
+
+        .print-button:hover {
+          background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+        }
+
+        .print-button:active {
+          transform: translateY(0);
         }
 
         /* Screen Styles */
