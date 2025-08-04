@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 
 interface NutritionData {
@@ -39,8 +39,41 @@ interface NutritionData {
 
 function PrintReportContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [data, setData] = useState<NutritionData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // التحقق من تسجيل الدخول
+  useEffect(() => {
+    const checkAuth = () => {
+      if (typeof window !== 'undefined') {
+        const isLoggedIn = localStorage.getItem('isLoggedIn')
+        const loginTime = localStorage.getItem('loginTime')
+        
+        // التحقق من وجود تسجيل دخول صالح
+        if (!isLoggedIn || !loginTime) {
+          router.push('/login')
+          return
+        }
+        
+        // التحقق من انتهاء صلاحية الجلسة (24 ساعة)
+        const loginTimestamp = parseInt(loginTime)
+        const currentTime = Date.now()
+        const sessionDuration = 24 * 60 * 60 * 1000 // 24 ساعة
+        
+        if (currentTime - loginTimestamp > sessionDuration) {
+          // انتهت صلاحية الجلسة
+          localStorage.removeItem('isLoggedIn')
+          localStorage.removeItem('loginTime')
+          localStorage.removeItem('userEmail')
+          router.push('/login')
+          return
+        }
+      }
+    }
+    
+    checkAuth()
+  }, [router])
 
   useEffect(() => {
     // Get data from URL parameters
@@ -80,10 +113,38 @@ function PrintReportContent() {
 
   return (
     <div className="print-report">
-      {/* Print Button - Only visible on screen */}
-      <div className="print-button-container">
+      {/* Print Button and Logout Button - Only visible on screen */}
+      <div className="print-button-container" style={{
+        display: 'flex',
+        gap: '10px',
+        justifyContent: 'center',
+        marginBottom: '20px'
+      }}>
         <button onClick={handlePrint} className="print-button">
           🖨️ طباعة التقرير
+        </button>
+        <button
+          onClick={() => {
+            localStorage.removeItem('isLoggedIn')
+            localStorage.removeItem('loginTime')
+            localStorage.removeItem('userEmail')
+            router.push('/login')
+          }}
+          style={{
+            background: '#dc2626',
+            color: 'white',
+            border: 'none',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            transition: 'background 0.3s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = '#b91c1c'}
+          onMouseOut={(e) => e.currentTarget.style.background = '#dc2626'}
+        >
+          🚪 تسجيل الخروج
         </button>
       </div>
       {/* Page 1: Cover */}

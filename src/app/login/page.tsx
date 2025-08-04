@@ -42,7 +42,10 @@ const LoginPage = dynamic(() => Promise.resolve(() => {
       const data = await response.json()
 
       if (response.ok && data.isValid) {
+        // حفظ بيانات تسجيل الدخول
         localStorage.setItem('userEmail', email)
+        localStorage.setItem('isLoggedIn', 'true')
+        localStorage.setItem('loginTime', Date.now().toString())
         
         // Log successful login
         const loginRecord = {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
 
 // Dynamically import Chart.js components
 const Pie = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Pie })), { ssr: false })
@@ -30,6 +31,40 @@ interface NutritionPlan {
 
 // Disable SSR for the entire calculator component
 const Calculator = dynamic(() => Promise.resolve(() => {
+  const router = useRouter()
+  
+  // التحقق من تسجيل الدخول
+  useEffect(() => {
+    const checkAuth = () => {
+      if (typeof window !== 'undefined') {
+        const isLoggedIn = localStorage.getItem('isLoggedIn')
+        const loginTime = localStorage.getItem('loginTime')
+        
+        // التحقق من وجود تسجيل دخول صالح
+        if (!isLoggedIn || !loginTime) {
+          router.push('/login')
+          return
+        }
+        
+        // التحقق من انتهاء صلاحية الجلسة (24 ساعة)
+        const loginTimestamp = parseInt(loginTime)
+        const currentTime = Date.now()
+        const sessionDuration = 24 * 60 * 60 * 1000 // 24 ساعة
+        
+        if (currentTime - loginTimestamp > sessionDuration) {
+          // انتهت صلاحية الجلسة
+          localStorage.removeItem('isLoggedIn')
+          localStorage.removeItem('loginTime')
+          localStorage.removeItem('userEmail')
+          router.push('/login')
+          return
+        }
+      }
+    }
+    
+    checkAuth()
+  }, [router])
+  
   const [playerData, setPlayerData] = useState<PlayerData>({
     name: '',
     age: 9,
@@ -1070,15 +1105,48 @@ const Calculator = dynamic(() => Promise.resolve(() => {
         padding: '20px',
         boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
       }}>
-        <h1 style={{
-          textAlign: 'center',
-          color: '#1a472a',
-          fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+        {/* Header with Logout Button */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           marginBottom: '20px',
-          fontWeight: 'bold'
+          flexWrap: 'wrap',
+          gap: '10px'
         }}>
-          حاسبة التغذية الرياضية
-        </h1>
+          <h1 style={{
+            color: '#1a472a',
+            fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+            fontWeight: 'bold',
+            margin: 0
+          }}>
+            حاسبة التغذية الرياضية
+          </h1>
+          
+          <button
+            onClick={() => {
+              localStorage.removeItem('isLoggedIn')
+              localStorage.removeItem('loginTime')
+              localStorage.removeItem('userEmail')
+              router.push('/login')
+            }}
+            style={{
+              background: '#dc2626',
+              color: 'white',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              transition: 'background 0.3s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = '#b91c1c'}
+            onMouseOut={(e) => e.currentTarget.style.background = '#dc2626'}
+          >
+            🚪 تسجيل الخروج
+          </button>
+        </div>
 
         {/* Validation Errors */}
         {validationErrors.length > 0 && (
