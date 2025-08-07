@@ -137,8 +137,8 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
   const EMAIL_PASS = process.env.EMAIL_PASS
 
   if (!EMAIL_USER || !EMAIL_PASS) {
-    console.error('Missing environment variables: { EMAIL_USER: false, EMAIL_PASS: false }')
-    throw new Error('Email configuration missing')
+    console.error('Missing environment variables: EMAIL_USER or EMAIL_PASS not set')
+    throw new Error('Email configuration missing: EMAIL_USER and EMAIL_PASS must be set in environment variables')
   }
 
   // Create new transporter with optimized settings
@@ -164,10 +164,18 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
     await transporter.verify()
     console.log('SMTP connection verified successfully')
     lastTransporterCheck = now
-  } catch (error) {
-    console.error('SMTP verification failed:', error)
+  } catch (error: any) {
+    console.error('SMTP verification failed:', error.message)
     transporter = null
-    throw error
+    
+    // Provide more specific error messages
+    if (error.code === 'EAUTH') {
+      throw new Error('Authentication failed: Please check EMAIL_USER and EMAIL_PASS')
+    } else if (error.code === 'ECONNECTION') {
+      throw new Error('Connection failed: Please check internet connection and Gmail settings')
+    } else {
+      throw new Error(`SMTP Error: ${error.message}`)
+    }
   }
 
   return transporter
@@ -426,10 +434,24 @@ export async function POST(request: NextRequest) {
     const duration = Date.now() - startTime
     console.error('Email sending error:', error)
     
+    // Provide more specific error messages
+    let errorMessage = 'حدث خطأ في إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى'
+    
+    if (error.message.includes('Email configuration missing')) {
+      errorMessage = 'خطأ في إعدادات البريد الإلكتروني: يرجى التحقق من متغيرات البيئة EMAIL_USER و EMAIL_PASS'
+    } else if (error.message.includes('Authentication failed')) {
+      errorMessage = 'خطأ في مصادقة البريد الإلكتروني: يرجى التحقق من اسم المستخدم وكلمة المرور'
+    } else if (error.message.includes('Connection failed')) {
+      errorMessage = 'خطأ في الاتصال بخادم البريد الإلكتروني: يرجى التحقق من إعدادات Gmail'
+    } else if (error.message.includes('SMTP Error')) {
+      errorMessage = `خطأ في خادم البريد الإلكتروني: ${error.message}`
+    }
+    
     return NextResponse.json({
       success: false,
-      error: 'حدث خطأ في إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى',
-      duration
+      error: errorMessage,
+      duration,
+      details: error.message
     }, { status: 500 })
   }
 } 

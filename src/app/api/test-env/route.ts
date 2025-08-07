@@ -1,46 +1,60 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Get environment variables
+    const emailUser = process.env.EMAIL_USER
+    const emailPass = process.env.EMAIL_PASS
+    const appSecret = process.env.APP_SECRET
+    const databaseUrl = process.env.DATABASE_URL
+    const adminPassword = process.env.ADMIN_PASSWORD
+    const nodeEnv = process.env.NODE_ENV
+    const port = process.env.PORT
+    const domain = process.env.NEXT_PUBLIC_DOMAIN
+
+    // Check if email configuration is complete
+    const emailConfigComplete = !!(emailUser && emailPass)
+    const emailUserLength = emailUser ? emailUser.length : 0
+    const emailPassLength = emailPass ? emailPass.length : 0
+
+    // Test nodemailer import
+    let nodemailerAvailable = false
+    let nodemailerError = null
+    try {
+      const nodemailer = require('nodemailer')
+      nodemailerAvailable = true
+    } catch (error: any) {
+      nodemailerError = error.message
+    }
+
     return NextResponse.json({
-      status: 'success',
-      timestamp: new Date().toISOString(),
-      
-      // المتغيرات الأساسية
-      nodeEnv: process.env.NODE_ENV,
-      port: process.env.PORT,
-      
-      // متغيرات الدومين
-      domain: process.env.NEXT_PUBLIC_DOMAIN,
-      siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
-      
-      // متغيرات الأمان
-      customKey: process.env.CUSTOM_KEY ? '✅ موجود' : '❌ غير موجود',
-      
-      // متغيرات البريد الإلكتروني
-      emailHost: process.env.EMAIL_HOST,
-      emailPort: process.env.EMAIL_PORT,
-      emailUser: process.env.EMAIL_USER ? '✅ موجود' : '❌ غير موجود',
-      emailPass: process.env.EMAIL_PASS ? '✅ موجود' : '❌ غير موجود',
-      emailFrom: process.env.EMAIL_FROM,
-      
-      // متغيرات إضافية
-      appName: process.env.NEXT_PUBLIC_APP_NAME,
-      appVersion: process.env.NEXT_PUBLIC_APP_VERSION,
-      
-      // قاعدة البيانات
-      databaseUrl: process.env.DATABASE_URL ? '✅ موجود' : '❌ غير موجود',
-      
-      // معلومات النظام
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      version: process.version
+      success: true,
+      environment: {
+        NODE_ENV: nodeEnv,
+        PORT: port,
+        NEXT_PUBLIC_DOMAIN: domain,
+        EMAIL_USER: emailUser ? `${emailUser.substring(0, 3)}***@${emailUser.split('@')[1]}` : 'NOT_SET',
+        EMAIL_PASS: emailPass ? `${emailPass.substring(0, 3)}***` : 'NOT_SET',
+        APP_SECRET: appSecret ? 'SET' : 'NOT_SET',
+        DATABASE_URL: databaseUrl ? 'SET' : 'NOT_SET',
+        ADMIN_PASSWORD: adminPassword ? 'SET' : 'NOT_SET'
+      },
+      emailConfiguration: {
+        isComplete: emailConfigComplete,
+        userLength: emailUserLength,
+        passLength: emailPassLength,
+        nodemailerAvailable,
+        nodemailerError
+      },
+      recommendations: {
+        ifEmailConfigIncomplete: 'يرجى إضافة EMAIL_USER و EMAIL_PASS في متغيرات البيئة على Railway',
+        ifNodemailerNotAvailable: 'يرجى تثبيت nodemailer: npm install nodemailer @types/nodemailer'
+      }
     })
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json({
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
+      success: false,
+      error: error.message
     }, { status: 500 })
   }
 } 

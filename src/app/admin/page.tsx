@@ -993,6 +993,7 @@ export default function AdminDashboard() {
       
       const endTime = performance.now()
       const duration = endTime - startTime
+      const data = await response.json()
       
       if (response.ok) {
         return {
@@ -1006,7 +1007,7 @@ export default function AdminDashboard() {
           name: 'API إرسال البريد',
           duration,
           status: 'warning',
-          details: `استجابة ${response.status} في ${duration.toFixed(2)}ms`
+          details: `خطأ: ${data.error || 'خطأ غير معروف'}`
         }
       }
     } catch (error) {
@@ -1015,6 +1016,47 @@ export default function AdminDashboard() {
         duration: 0,
         status: 'error',
         details: `خطأ: ${error}`
+      }
+    }
+  }
+
+  const testEmailConfiguration = async () => {
+    try {
+      const response = await fetch('/api/test-env')
+      const data = await response.json()
+      
+      if (data.success) {
+        const { emailConfiguration, environment } = data
+        
+        if (emailConfiguration.isComplete) {
+          return {
+            name: 'إعدادات البريد الإلكتروني',
+            duration: 0,
+            status: 'success',
+            details: '✅ إعدادات البريد الإلكتروني صحيحة'
+          }
+        } else {
+          return {
+            name: 'إعدادات البريد الإلكتروني',
+            duration: 0,
+            status: 'error',
+            details: '❌ EMAIL_USER أو EMAIL_PASS غير موجود'
+          }
+        }
+      } else {
+        return {
+          name: 'إعدادات البريد الإلكتروني',
+          duration: 0,
+          status: 'error',
+          details: '❌ فشل في فحص الإعدادات'
+        }
+      }
+    } catch (error) {
+      return {
+        name: 'إعدادات البريد الإلكتروني',
+        duration: 0,
+        status: 'error',
+        details: `❌ خطأ: ${error}`
       }
     }
   }
@@ -1108,6 +1150,7 @@ export default function AdminDashboard() {
     setTestResults([])
     
     const tests = [
+      { name: 'اختبار إعدادات البريد الإلكتروني', test: testEmailConfiguration },
       { name: 'اختبار API إرسال البريد', test: testEmailAPI },
       { name: 'اختبار API التحقق من الرموز', test: testVerifyAPI },
       { name: 'اختبار الحسابات المعقدة', test: () => Promise.resolve(testCalculations()) },
