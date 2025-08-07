@@ -1022,33 +1022,38 @@ export default function AdminDashboard() {
 
   const testEmailConfiguration = async () => {
     try {
-      const response = await fetch('/api/test-env')
-      const data = await response.json()
+      const startTime = performance.now()
       
-      if (data.success) {
-        const { emailConfiguration, environment } = data
-        
-        if (emailConfiguration.isComplete) {
-          return {
-            name: 'إعدادات البريد الإلكتروني',
-            duration: 0,
-            status: 'success',
-            details: '✅ إعدادات البريد الإلكتروني صحيحة'
-          }
-        } else {
-          return {
-            name: 'إعدادات البريد الإلكتروني',
-            duration: 0,
-            status: 'error',
-            details: '❌ EMAIL_USER أو EMAIL_PASS غير موجود'
-          }
+      console.log('🔍 Testing email configuration...')
+      
+      // Test 1: Check environment variables
+      const envTest = {
+        EMAIL_USER: process.env.EMAIL_USER || 'NOT_SET',
+        EMAIL_PASS: process.env.EMAIL_PASS ? 'SET' : 'NOT_SET'
+      }
+      
+      console.log('Environment variables:', envTest)
+      
+      // Test 2: Test SMTP connection
+      const response = await fetch('/api/test-env')
+      const envData = await response.json()
+      
+      const endTime = performance.now()
+      const duration = endTime - startTime
+      
+      if (envData.emailConfiguration) {
+        return {
+          name: 'إعدادات البريد الإلكتروني',
+          duration,
+          status: 'success',
+          details: `✅ EMAIL_USER: ${envData.emailConfiguration.EMAIL_USER}\n✅ EMAIL_PASS: ${envData.emailConfiguration.EMAIL_PASS}\n✅ SMTP: ${envData.emailConfiguration.smtpStatus}`
         }
       } else {
         return {
           name: 'إعدادات البريد الإلكتروني',
-          duration: 0,
+          duration,
           status: 'error',
-          details: '❌ فشل في فحص الإعدادات'
+          details: `❌ خطأ في إعدادات البريد الإلكتروني`
         }
       }
     } catch (error) {
