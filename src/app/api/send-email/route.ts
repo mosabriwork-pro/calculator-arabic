@@ -345,17 +345,46 @@ export async function POST(request: NextRequest) {
           border-bottom: 3px solid rgba(34,197,94,0.3);
         ">
           <div style="
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            border-radius: 20px;
+            border-radius: 50%;
             margin: 0 auto 20px;
             display: flex;
             alignItems: center;
             justifyContent: center;
-            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+            box-shadow: 0 15px 35px rgba(34, 197, 94, 0.4);
+            position: relative;
+            overflow: hidden;
           ">
-            <span style="font-size: 2rem; font-weight: bold;">⚽</span>
+            <div style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              font-size: 3rem;
+              color: white;
+              text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            ">
+              ⚽
+            </div>
+            <div style="
+              position: absolute;
+              bottom: -5px;
+              right: -5px;
+              width: 30px;
+              height: 30px;
+              background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+              border-radius: 50%;
+              display: flex;
+              alignItems: center;
+              justifyContent: center;
+              font-size: 1rem;
+              color: white;
+              box-shadow: 0 4px 8px rgba(251, 191, 36, 0.4);
+            ">
+              🏆
+            </div>
           </div>
           
           <h1 style="
