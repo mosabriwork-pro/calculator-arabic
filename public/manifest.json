@@ -3,17 +3,17 @@
   "name": "موصبري برو | حاسبة لاعب كرة القدم",
   "icons": [
     {
-      "src": "greenlogo.png",
-      "sizes": "512x512 256x256 128x128 64x64 32x32 16x16",
-      "type": "image/png"
+      "src": "favicon.ico",
+      "sizes": "16x16 32x32",
+      "type": "image/x-icon"
     },
     {
-      "src": "greenlogo.png",
+      "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "greenlogo.png",
+      "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
