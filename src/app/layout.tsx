@@ -6,7 +6,7 @@ import Navbar from '../components/Navbar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'حاسبة لاعب كرة القدم - موصبري برو',
+  title: 'موصبري برو - حاسبة لاعب كرة القدم',
   description: 'حاسبة متقدمة لتخطيط النظام الغذائي للاعبين كرة القدم بناء على العمر والوزن والطول والمركز ومستوى النشاط. احصل على خطة غذائية مخصصة لتحقيق أهدافك الرياضية.',
   keywords: 'حاسبة غذائية, لاعب كرة القدم, تغذية رياضية, خطة غذائية, بروتين, كربوهيدرات, دهون, وزن مثالي, رياضة, كرة القدم العربية',
   authors: [{ name: 'موصبري برو' }],
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'حاسبة لاعب كرة القدم - موصبري برو',
+    title: 'موصبري برو - حاسبة لاعب كرة القدم',
     description: 'حاسبة متقدمة لتخطيط النظام الغذائي للاعبين كرة القدم. احصل على خطة غذائية مخصصة لتحقيق أهدافك الرياضية.',
     url: 'https://mosabri.top',
     siteName: 'موصبري برو',
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'حاسبة لاعب كرة القدم - موصبري برو',
+    title: 'موصبري برو - حاسبة لاعب كرة القدم',
     description: 'حاسبة متقدمة لتخطيط النظام الغذائي للاعبين كرة القدم',
     images: ['/greenlogo.png'],
   },
@@ -88,7 +88,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebApplication",
-              "name": "حاسبة لاعب كرة القدم - موصبري برو",
+              "name": "موصبري برو - حاسبة لاعب كرة القدم",
               "description": "حاسبة متقدمة لتخطيط النظام الغذائي للاعبين كرة القدم",
               "url": "https://mosabri.top",
               "applicationCategory": "SportsApplication",

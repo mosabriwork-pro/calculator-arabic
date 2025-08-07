@@ -112,7 +112,7 @@ export default function Navbar() {
               filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
               whiteSpace: 'nowrap'
             }}>
-              موصبري | Mosabri
+              موصبري برو | Mosabri Pro
             </h1>
             <p className="navbar-subtitle" style={{
               fontSize: '12px',
