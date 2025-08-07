@@ -330,70 +330,284 @@ export async function POST(request: NextRequest) {
       <div style="
         background: linear-gradient(135deg, #1a472a 0%, #0f2e1a 50%, #0a1f12 100%);
         color: white;
-        font-family: Arial, sans-serif;
-        padding: 40px;
-        border-radius: 20px;
-        text-align: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 0;
+        margin: 0;
         direction: rtl;
+        text-align: center;
+        min-height: 100vh;
       ">
-        <div style="
-          background: rgba(255,255,255,0.1);
-          padding: 10px;
-          border-radius: 10px;
-          margin-bottom: 20px;
-          font-size: 14px;
-          color: #fbbf24;
-        ">⚽ حاسبة موصبري المتقدمة</div>
         
-        <h1 style="font-size: 28px; font-weight: bold; margin-bottom: 25px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-          خطتك الغذائية الاحترافية كلاعب كرة قدم
-        </h1>
-        
-        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-          مرحباً بك في حاسبة موصبري المتقدمة للتغذية الرياضية
-        </p>
-        
+        <!-- Header Section -->
         <div style="
           background: linear-gradient(135deg, rgba(34,197,94,0.2) 0%, rgba(16,185,129,0.2) 100%);
-          padding: 25px;
-          border-radius: 15px;
-          border: 2px solid rgba(34,197,94,0.3);
-          margin-bottom: 30px;
+          padding: 40px 20px;
+          border-bottom: 3px solid rgba(34,197,94,0.3);
         ">
-          <h2 style="font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #22c55e;">كيفية الدخول</h2>
-          <div style="text-align: right; font-size: 14px; line-height: 1.8;">
-            <div style="margin-bottom: 10px;">1️⃣ اذهب إلى <a href="https://mosabri.top/login" style="color: #22c55e; text-decoration: none; font-weight: bold;">صفحة تسجيل الدخول</a></div>
-            <div style="margin-bottom: 10px;">2️⃣ أدخل بريدك الإلكتروني: <strong>${email}</strong></div>
-            <div style="margin-bottom: 10px;">3️⃣ أدخل رمز الوصول: <strong style="font-size: 18px; color: #fbbf24;">${accessCode}</strong></div>
-            <div style="margin-bottom: 10px;">4️⃣ اضغط "تسجيل الدخول" واستمتع بخطتك الغذائية المخصصة</div>
+          <div style="
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            alignItems: center;
+            justifyContent: center;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+          ">
+            <span style="font-size: 2rem; font-weight: bold;">⚽</span>
           </div>
+          
+          <h1 style="
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          ">
+            موصبري برو
+          </h1>
+          
+          <h2 style="
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            color: #9ca3af;
+          ">
+            حاسبة لاعب كرة القدم
+          </h2>
         </div>
-        
+
+        <!-- Access Code Section -->
         <div style="
           background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(37,99,235,0.2) 100%);
-          padding: 20px;
-          border-radius: 15px;
-          border: 2px solid rgba(59,130,246,0.3);
-          margin-bottom: 30px;
+          padding: 40px 20px;
+          border-bottom: 3px solid rgba(59,130,246,0.3);
         ">
-          <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #3b82f6;">مميزات حاسبة موصبري</h3>
-          <div style="text-align: right; font-size: 13px; line-height: 1.6;">
-            <div style="margin-bottom: 5px;">• حسابات دقيقة بناءً على عمرك ووزنك وطولك</div>
-            <div style="margin-bottom: 5px;">• خطط غذائية مخصصة لثلاثة أهداف مختلفة</div>
-            <div style="margin-bottom: 5px;">• توصيات خاصة بمركزك في الملعب</div>
-            <div style="margin-bottom: 5px;">• تقرير PDF شامل ومفصل</div>
+          <h3 style="
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 0 0 30px 0;
+            color: #3b82f6;
+          ">
+            استخدم هذا الرمز للدخول للآلة
+          </h3>
+          
+          <div style="
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1f2937;
+            font-size: 2.5rem;
+            font-weight: bold;
+            padding: 20px 40px;
+            border-radius: 15px;
+            margin: 20px auto;
+            display: inline-block;
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+            letter-spacing: 3px;
+          ">
+            ${accessCode}
           </div>
         </div>
-        
+
+        <!-- Instructions Section -->
         <div style="
-          background: rgba(255,255,255,0.05);
-          padding: 15px;
-          border-radius: 10px;
-          border: 1px solid rgba(255,255,255,0.1);
-          font-size: 12px;
-          color: #9ca3af;
+          background: linear-gradient(135deg, rgba(139,92,246,0.2) 0%, rgba(124,58,237,0.2) 100%);
+          padding: 40px 20px;
+          border-bottom: 3px solid rgba(139,92,246,0.3);
         ">
-          تم إرسال هذه الرسالة من فريق دعم موصبري
+          <h3 style="
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin: 0 0 25px 0;
+            color: #8b5cf6;
+          ">
+            تعليمات الدخول:
+          </h3>
+          
+          <div style="
+            text-align: right;
+            font-size: 1.1rem;
+            line-height: 2;
+            max-width: 500px;
+            margin: 0 auto;
+          ">
+            <div style="margin-bottom: 15px;">
+              <span style="font-size: 1.3rem; margin-left: 10px;">1️⃣</span>
+              انتقل إلى 
+              <a href="https://mosabri.top/login" style="
+                color: #22c55e;
+                text-decoration: none;
+                font-weight: bold;
+                background: rgba(34,197,94,0.1);
+                padding: 5px 10px;
+                border-radius: 5px;
+              ">صفحة تسجيل الدخول</a>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <span style="font-size: 1.3rem; margin-left: 10px;">2️⃣</span>
+              أدخل بريدك المسجَّل: 
+              <strong style="color: #fbbf24;">${email}</strong>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <span style="font-size: 1.3rem; margin-left: 10px;">3️⃣</span>
+              أدخل رمز التفعيل الخاص بك: 
+              <strong style="color: #fbbf24; font-size: 1.2rem;">${accessCode}</strong>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <span style="font-size: 1.3rem; margin-left: 10px;">4️⃣</span>
+              اضغط «تسجيل الدخول» واستمتع بخطتك المخصَّصة في أقل من دقيقتين!
+            </div>
+          </div>
+        </div>
+
+        <!-- Features Section -->
+        <div style="
+          background: linear-gradient(135deg, rgba(239,68,68,0.2) 0%, rgba(220,38,38,0.2) 100%);
+          padding: 40px 20px;
+          border-bottom: 3px solid rgba(239,68,68,0.3);
+        ">
+          <h3 style="
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin: 0 0 25px 0;
+            color: #ef4444;
+          ">
+            لماذا حاسبة موصبري؟ 🔥
+          </h3>
+          
+          <div style="
+            text-align: right;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            max-width: 500px;
+            margin: 0 auto;
+          ">
+            <div style="
+              background: rgba(255,255,255,0.1);
+              padding: 15px;
+              border-radius: 10px;
+              margin-bottom: 15px;
+              border-right: 4px solid #22c55e;
+            ">
+              <strong style="color: #22c55e;">🎯 دقة علمية</strong> مبنية على مركزك في الملعب وحجم نشاطك
+            </div>
+            
+            <div style="
+              background: rgba(255,255,255,0.1);
+              padding: 15px;
+              border-radius: 10px;
+              margin-bottom: 15px;
+              border-right: 4px solid #3b82f6;
+            ">
+              <strong style="color: #3b82f6;">📊 مخطط سعرات وماكروز</strong> متكيِّف لحظياً مع تعديلات بياناتك
+            </div>
+            
+            <div style="
+              background: rgba(255,255,255,0.1);
+              padding: 15px;
+              border-radius: 10px;
+              margin-bottom: 15px;
+              border-right: 4px solid #8b5cf6;
+            ">
+              <strong style="color: #8b5cf6;">🍎 توصيات غذائية</strong> خاصة
+            </div>
+            
+            <div style="
+              background: rgba(255,255,255,0.1);
+              padding: 15px;
+              border-radius: 10px;
+              margin-bottom: 15px;
+              border-right: 4px solid #fbbf24;
+            ">
+              <strong style="color: #fbbf24;">📋 تقرير شامل ومفصّل</strong> من 7 صفحات جاهز للطباعة
+            </div>
+            
+            <div style="
+              background: rgba(255,255,255,0.1);
+              padding: 15px;
+              border-radius: 10px;
+              margin-bottom: 15px;
+              border-right: 4px solid #ef4444;
+            ">
+              <strong style="color: #ef4444;">🔄 تحديثات مدى الحياة</strong> مجاناً — ابقَ على المسار الصحيح دائماً
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div style="
+          background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%);
+          padding: 40px 20px;
+          border-bottom: 3px solid rgba(16,185,129,0.3);
+        ">
+          <h3 style="
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin: 0 0 25px 0;
+            color: #10b981;
+          ">
+            عندك سؤال؟
+          </h3>
+          
+          <div style="
+            text-align: center;
+            font-size: 1.1rem;
+            line-height: 1.8;
+          ">
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #10b981;">📧</strong>
+              تواصل معنا مباشرة: 
+              <a href="mailto:mosabrihelp@gmail.com" style="
+                color: #10b981;
+                text-decoration: none;
+                font-weight: bold;
+              ">mosabrihelp@gmail.com</a>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #10b981;">📱</strong>
+              واتساب خدمة العملاء: 
+              <a href="https://wa.me/966571483853" style="
+                color: #10b981;
+                text-decoration: none;
+                font-weight: bold;
+              ">+966571483853</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div style="
+          background: rgba(0,0,0,0.3);
+          padding: 30px 20px;
+          border-top: 1px solid rgba(255,255,255,0.1);
+        ">
+          <div style="
+            font-size: 0.9rem;
+            color: #9ca3af;
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+          ">
+            <p style="margin-bottom: 15px;">
+              إذا لم تطلب هذا البريد فتجاهله أو أخبرنا، ولن يتم تفعيل أي حساب بدون رمزك الخاص.
+            </p>
+            
+            <div style="
+              border-top: 1px solid rgba(255,255,255,0.1);
+              padding-top: 15px;
+              font-size: 0.8rem;
+            ">
+              © 2025 ‎Mosabri Pro – جميع الحقوق محفوظة | 
+              <a href="#" style="color: #9ca3af; text-decoration: none;">إلغاء الاشتراك</a> | 
+              <a href="#" style="color: #9ca3af; text-decoration: none;">سياسة الخصوصية</a>
+            </div>
+          </div>
         </div>
       </div>
     `
