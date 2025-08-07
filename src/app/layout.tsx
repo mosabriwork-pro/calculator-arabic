@@ -67,12 +67,13 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <link rel="icon" href="/favicon-large.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-large.png" />
-        <link rel="icon" type="image/png" sizes="48x48" href="/favicon-large.png" />
-        <link rel="icon" type="image/png" sizes="64x64" href="/favicon-large.png" />
-        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-large.png" />
-        <link rel="apple-touch-icon" href="/favicon-large.png" />
+        <link rel="icon" href="/logo.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
+        <link rel="icon" type="image/png" sizes="48x48" href="/logo.png" />
+        <link rel="icon" type="image/png" sizes="64x64" href="/logo.png" />
+        <link rel="icon" type="image/png" sizes="96x96" href="/logo.png" />
+        <link rel="icon" type="image/png" sizes="128x128" href="/logo.png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#1a472a" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
