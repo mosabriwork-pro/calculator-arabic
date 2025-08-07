@@ -132,9 +132,20 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
     return transporter
   }
 
-  // Use default email configuration if environment variables are not set
-  const EMAIL_USER = process.env.EMAIL_USER || 'mosabri.pro@gmail.com'
-  const EMAIL_PASS = process.env.EMAIL_PASS || 'mosabri2024pro'
+  // Get email configuration
+  const EMAIL_USER = process.env.EMAIL_USER
+  const EMAIL_PASS = process.env.EMAIL_PASS
+
+  console.log('Email Configuration Check:')
+  console.log('- EMAIL_USER:', EMAIL_USER ? `${EMAIL_USER.substring(0, 3)}***@${EMAIL_USER.split('@')[1]}` : 'NOT_SET')
+  console.log('- EMAIL_PASS:', EMAIL_PASS ? `${EMAIL_PASS.substring(0, 3)}***` : 'NOT_SET')
+
+  if (!EMAIL_USER || !EMAIL_PASS) {
+    console.error('❌ Email configuration missing!')
+    throw new Error('Email configuration missing: EMAIL_USER and EMAIL_PASS must be set in environment variables')
+  }
+
+  console.log('✅ Email configuration found, creating transporter...')
 
   // Create new transporter with optimized settings
   transporter = nodemailer.createTransport({
@@ -150,26 +161,35 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
     socketTimeout: 30000, // 30 seconds
     connectionTimeout: 30000, // 30 seconds
     greetingTimeout: 30000, // 30 seconds
-    debug: false, // Disable debug in production
-    logger: false // Disable logger in production
+    debug: true, // Enable debug for troubleshooting
+    logger: true // Enable logger for troubleshooting
   })
 
   // Verify connection
   try {
+    console.log('🔍 Verifying SMTP connection...')
     await transporter.verify()
-    console.log('SMTP connection verified successfully')
+    console.log('✅ SMTP connection verified successfully')
     lastTransporterCheck = now
   } catch (error: any) {
-    console.error('SMTP verification failed:', error.message)
+    console.error('❌ SMTP verification failed:')
+    console.error('- Error Code:', error.code)
+    console.error('- Error Message:', error.message)
+    console.error('- Full Error:', JSON.stringify(error, null, 2))
+    
     transporter = null
     
     // Provide more specific error messages
     if (error.code === 'EAUTH') {
-      throw new Error('Authentication failed: Please check EMAIL_USER and EMAIL_PASS')
+      throw new Error(`Authentication failed (EAUTH): ${error.message}. Please check EMAIL_USER and EMAIL_PASS. Make sure to use App Password if 2FA is enabled.`)
     } else if (error.code === 'ECONNECTION') {
-      throw new Error('Connection failed: Please check internet connection and Gmail settings')
+      throw new Error(`Connection failed (ECONNECTION): ${error.message}. Please check internet connection and Gmail settings.`)
+    } else if (error.code === 'ETIMEDOUT') {
+      throw new Error(`Connection timeout (ETIMEDOUT): ${error.message}. Please check network connection.`)
+    } else if (error.code === 'EAUTH') {
+      throw new Error(`Authentication error (EAUTH): ${error.message}. Please check credentials.`)
     } else {
-      throw new Error(`SMTP Error: ${error.message}`)
+      throw new Error(`SMTP Error (${error.code}): ${error.message}`)
     }
   }
 
@@ -257,18 +277,24 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
   
   try {
+    console.log('📧 Starting email sending process...')
+    
     const { email } = await request.json()
     
     if (!email) {
+      console.log('❌ Email is required')
       return NextResponse.json({ 
         success: false, 
         error: 'البريد الإلكتروني مطلوب' 
       }, { status: 400 })
     }
 
+    console.log(`📧 Processing email request for: ${email}`)
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
+      console.log('❌ Invalid email format')
       return NextResponse.json({ 
         success: false, 
         error: 'صيغة البريد الإلكتروني غير صحيحة' 
@@ -280,10 +306,11 @@ export async function POST(request: NextRequest) {
                request.headers.get('x-real-ip') || 
                'unknown'
     
-    console.log(`Email request from IP: ${ip}`)
+    console.log(`📧 Email request from IP: ${ip}`)
 
     // Check rate limit
     if (!checkRateLimit(ip)) {
+      console.log('❌ Rate limit exceeded')
       return NextResponse.json({ 
         success: false, 
         error: 'تم تجاوز الحد المسموح. يرجى الانتظار دقيقة واحدة قبل المحاولة مرة أخرى' 
@@ -292,11 +319,14 @@ export async function POST(request: NextRequest) {
 
     // Generate access code
     const accessCode = generateAccessCode(email)
+    console.log(`🔐 Generated access code: ${accessCode}`)
 
     // Get transporter
+    console.log('🔧 Getting email transporter...')
     const transporter = await getTransporter()
 
     // Prepare email content
+    console.log('📝 Preparing email content...')
     const emailContent = `
       <div style="
         background: linear-gradient(135deg, #1a472a 0%, #0f2e1a 50%, #0a1f12 100%);
@@ -370,15 +400,23 @@ export async function POST(request: NextRequest) {
     `
 
     // Send email with optimized settings
+    console.log('📤 Sending email...')
     const mailOptions = {
-      from: `"حاسبة موصبري" <${process.env.EMAIL_USER || 'mosabri.pro@gmail.com'}>`,
+      from: `"حاسبة موصبري" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'رمز الوصول - حاسبة موصبري المتقدمة',
       html: emailContent,
       priority: 'high' as const
     }
 
+    console.log('📤 Mail options:', {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject
+    })
+
     await transporter.sendMail(mailOptions)
+    console.log('✅ Email sent successfully!')
 
     // Record customer activity
     const today = new Date()
@@ -416,7 +454,7 @@ export async function POST(request: NextRequest) {
 
     const duration = Date.now() - startTime
     
-    console.log(`Email sent successfully to ${email} in ${duration}ms`)
+    console.log(`✅ Email sent successfully to ${email} in ${duration}ms`)
 
     return NextResponse.json({
       success: true,
@@ -427,26 +465,35 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     const duration = Date.now() - startTime
-    console.error('Email sending error:', error)
+    console.error('❌ Email sending error:')
+    console.error('- Error Type:', error.constructor.name)
+    console.error('- Error Message:', error.message)
+    console.error('- Error Code:', error.code)
+    console.error('- Error Stack:', error.stack)
+    console.error('- Full Error Object:', JSON.stringify(error, null, 2))
     
     // Provide more specific error messages
     let errorMessage = 'حدث خطأ في إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى'
+    let errorDetails = error.message
     
     if (error.message.includes('Email configuration missing')) {
       errorMessage = 'خطأ في إعدادات البريد الإلكتروني: يرجى التحقق من متغيرات البيئة EMAIL_USER و EMAIL_PASS'
-    } else if (error.message.includes('Authentication failed')) {
-      errorMessage = 'خطأ في مصادقة البريد الإلكتروني: يرجى التحقق من اسم المستخدم وكلمة المرور'
-    } else if (error.message.includes('Connection failed')) {
-      errorMessage = 'خطأ في الاتصال بخادم البريد الإلكتروني: يرجى التحقق من إعدادات Gmail'
+    } else if (error.message.includes('Authentication failed') || error.code === 'EAUTH') {
+      errorMessage = 'خطأ في مصادقة البريد الإلكتروني: يرجى التحقق من اسم المستخدم وكلمة المرور. تأكد من تفعيل كلمة مرور التطبيق إذا كان التحقق بخطوتين مفعل.'
+    } else if (error.message.includes('Connection failed') || error.code === 'ECONNECTION') {
+      errorMessage = 'خطأ في الاتصال بخادم البريد الإلكتروني: يرجى التحقق من إعدادات Gmail والاتصال بالإنترنت'
     } else if (error.message.includes('SMTP Error')) {
       errorMessage = `خطأ في خادم البريد الإلكتروني: ${error.message}`
+    } else if (error.code === 'ETIMEDOUT') {
+      errorMessage = 'انتهت مهلة الاتصال: يرجى التحقق من الاتصال بالإنترنت وإعدادات Gmail'
     }
     
     return NextResponse.json({
       success: false,
       error: errorMessage,
       duration,
-      details: error.message
+      details: errorDetails,
+      errorCode: error.code
     }, { status: 500 })
   }
 } 
