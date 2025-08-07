@@ -1,19 +1,19 @@
 {
-  "short_name": "موصبري",
-  "name": "موصبري | حاسبة لاعب كرة القدم",
+  "short_name": "موصبري برو",
+  "name": "موصبري برو | حاسبة لاعب كرة القدم",
   "icons": [
     {
-      "src": "logoforweb.png",
+      "src": "greenlogo.png",
       "sizes": "512x512 256x256 128x128 64x64 32x32 16x16",
       "type": "image/png"
     },
     {
-      "src": "logoforweb.png",
+      "src": "greenlogo.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logoforweb.png",
+      "src": "greenlogo.png",
       "type": "image/png",
       "sizes": "512x512"
     }

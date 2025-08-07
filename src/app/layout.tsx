@@ -6,12 +6,12 @@ import Navbar from '../components/Navbar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'حاسبة لاعب كرة القدم - خطتك الغذائية الاحترافية',
+  title: 'حاسبة لاعب كرة القدم - موصبري برو',
   description: 'حاسبة متقدمة لتخطيط النظام الغذائي للاعبين كرة القدم بناء على العمر والوزن والطول والمركز ومستوى النشاط. احصل على خطة غذائية مخصصة لتحقيق أهدافك الرياضية.',
   keywords: 'حاسبة غذائية, لاعب كرة القدم, تغذية رياضية, خطة غذائية, بروتين, كربوهيدرات, دهون, وزن مثالي, رياضة, كرة القدم العربية',
-  authors: [{ name: 'حاسبة موصبري' }],
-  creator: 'حاسبة موصبري المتقدمة',
-  publisher: 'حاسبة موصبري',
+  authors: [{ name: 'موصبري برو' }],
+  creator: 'موصبري برو المتقدمة',
+  publisher: 'موصبري برو',
   formatDetection: {
     email: false,
     address: false,
@@ -22,16 +22,16 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'حاسبة لاعب كرة القدم - خطتك الغذائية الاحترافية',
+    title: 'حاسبة لاعب كرة القدم - موصبري برو',
     description: 'حاسبة متقدمة لتخطيط النظام الغذائي للاعبين كرة القدم. احصل على خطة غذائية مخصصة لتحقيق أهدافك الرياضية.',
     url: 'https://mosabri.top',
-    siteName: 'حاسبة موصبري',
+    siteName: 'موصبري برو',
     images: [
       {
-        url: '/og-image.png',
+        url: '/greenlogo.png',
         width: 1200,
         height: 630,
-        alt: 'حاسبة لاعب كرة القدم',
+        alt: 'حاسبة لاعب كرة القدم - موصبري برو',
       },
     ],
     locale: 'ar_SA',
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'حاسبة لاعب كرة القدم - خطتك الغذائية الاحترافية',
+    title: 'حاسبة لاعب كرة القدم - موصبري برو',
     description: 'حاسبة متقدمة لتخطيط النظام الغذائي للاعبين كرة القدم',
-    images: ['/og-image.png'],
+    images: ['/greenlogo.png'],
   },
   robots: {
     index: true,
@@ -67,15 +67,15 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/greenlogo.png" />
+        <link rel="apple-touch-icon" href="/greenlogo.png" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#1a472a" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="حاسبة موصبري" />
+        <meta name="apple-mobile-web-app-title" content="موصبري برو" />
         
         {/* Structured Data */}
         <script
@@ -84,7 +84,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebApplication",
-              "name": "حاسبة لاعب كرة القدم",
+              "name": "حاسبة لاعب كرة القدم - موصبري برو",
               "description": "حاسبة متقدمة لتخطيط النظام الغذائي للاعبين كرة القدم",
               "url": "https://mosabri.top",
               "applicationCategory": "SportsApplication",
@@ -96,7 +96,7 @@ export default function RootLayout({
               },
               "author": {
                 "@type": "Organization",
-                "name": "حاسبة موصبري"
+                "name": "موصبري برو"
               }
             })
           }}
