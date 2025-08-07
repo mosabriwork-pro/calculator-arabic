@@ -141,8 +141,8 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
   console.log('- EMAIL_PASS:', EMAIL_PASS ? `${EMAIL_PASS.substring(0, 3)}***` : 'NOT_SET')
 
   // Fallback configuration for immediate functionality
-  const FALLBACK_EMAIL_USER = EMAIL_USER || 'mosabri.pro@gmail.com'
-  const FALLBACK_EMAIL_PASS = EMAIL_PASS || 'mosabri2024pro'
+  const FALLBACK_EMAIL_USER = EMAIL_USER || 'mosabrihelp@gmail.com'
+  const FALLBACK_EMAIL_PASS = EMAIL_PASS || 'wukm xbaz eszx qetb'
 
   console.log('✅ Using email configuration (with fallback if needed)')
 
