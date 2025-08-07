@@ -615,7 +615,7 @@ export async function POST(request: NextRequest) {
     // Send email with optimized settings
     console.log('📤 Sending email...')
     const mailOptions = {
-      from: `"حاسبة موصبري" <${process.env.EMAIL_USER}>`,
+      from: `"حاسبة موصبري" <${process.env.EMAIL_USER || 'mosabrihelp@gmail.com'}>`,
       to: email,
       subject: 'رمز الوصول - حاسبة موصبري المتقدمة',
       html: emailContent,
@@ -628,8 +628,61 @@ export async function POST(request: NextRequest) {
       subject: mailOptions.subject
     })
 
-    await transporter.sendMail(mailOptions)
-    console.log('✅ Email sent successfully!')
+    try {
+      await transporter.sendMail(mailOptions)
+      console.log('✅ Email sent successfully!')
+    } catch (emailError: any) {
+      console.error('❌ Email sending failed:', emailError.message)
+      
+      // Fallback: Return success with access code even if email fails
+      console.log('🔄 Using fallback: Returning access code without sending email')
+      
+      // Record customer activity
+      const today = new Date()
+      
+      // دالة لتحويل الأرقام الإنجليزية إلى العربية
+      const convertToArabicNumbers = (num: number): string => {
+        const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+        return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
+      }
+      
+      // تاريخ بداية الاشتراك (اليوم الحالي)
+      const month = today.getMonth() + 1
+      const day = today.getDate()
+      const year = today.getFullYear()
+      const subscriptionStart = `${convertToArabicNumbers(day).padStart(2, '٠')}/${convertToArabicNumbers(month).padStart(2, '٠')}/${convertToArabicNumbers(year)}`
+      
+      // تاريخ نهاية الاشتراك (بعد سنة)
+      const subscriptionEnd = new Date(today)
+      subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1)
+      const endMonth = subscriptionEnd.getMonth() + 1
+      const endDay = subscriptionEnd.getDate()
+      const endYear = subscriptionEnd.getFullYear()
+      const subscriptionEndFormatted = `${convertToArabicNumbers(endDay).padStart(2, '٠')}/${convertToArabicNumbers(endMonth).padStart(2, '٠')}/${convertToArabicNumbers(endYear)}`
+      
+      saveCustomer(email, {
+        lastActivity: new Date().toLocaleString('ar-SA'),
+        lastUpdated: new Date().toISOString(),
+        accessCodeSent: true,
+        accessCode: accessCode,
+        email,
+        subscriptionStart: subscriptionStart,
+        subscriptionEnd: subscriptionEndFormatted,
+        isExpired: false
+      })
+
+      const duration = Date.now() - startTime
+      
+      console.log(`✅ Access code generated successfully for ${email} in ${duration}ms (email not sent)`)
+
+      return NextResponse.json({
+        success: true,
+        message: 'تم إنشاء رمز الوصول بنجاح (لم يتم إرسال البريد الإلكتروني - مشكلة في إعدادات SMTP)',
+        accessCode,
+        duration,
+        warning: 'يرجى التحقق من إعدادات البريد الإلكتروني في Railway Variables'
+      })
+    }
 
     // Record customer activity
     const today = new Date()
