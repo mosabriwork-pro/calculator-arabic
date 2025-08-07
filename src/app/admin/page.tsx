@@ -1247,6 +1247,141 @@ export default function AdminDashboard() {
     }
   }
 
+  // اختبار شامل لجميع الأزرار والدوال
+  const testAllAdminFunctions = async () => {
+    const results = []
+    
+    // اختبار 1: إرسال بريد إلكتروني
+    try {
+      const emailResponse = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'test@example.com' })
+      })
+      const emailData = await emailResponse.json()
+      results.push({
+        function: 'إرسال البريد الإلكتروني',
+        status: emailResponse.ok ? '✅ نجح' : '❌ فشل',
+        details: emailData.error || 'تم الإرسال بنجاح'
+      })
+    } catch (error: any) {
+      results.push({
+        function: 'إرسال البريد الإلكتروني',
+        status: '❌ فشل',
+        details: error.message
+      })
+    }
+
+    // اختبار 2: التحقق من الرموز
+    try {
+      const verifyResponse = await fetch('/api/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'test@example.com', code: 'TEST123' })
+      })
+      const verifyData = await verifyResponse.json()
+      results.push({
+        function: 'التحقق من الرموز',
+        status: verifyResponse.ok ? '✅ نجح' : '❌ فشل',
+        details: verifyData.error || 'تم التحقق بنجاح'
+      })
+    } catch (error: any) {
+      results.push({
+        function: 'التحقق من الرموز',
+        status: '❌ فشل',
+        details: error.message
+      })
+    }
+
+    // اختبار 3: إدارة الرموز الثابتة
+    try {
+      const codesResponse = await fetch('/api/permanent-codes')
+      const codesData = await codesResponse.json()
+      results.push({
+        function: 'إدارة الرموز الثابتة',
+        status: codesResponse.ok ? '✅ نجح' : '❌ فشل',
+        details: codesData.error || 'تم تحميل الرموز بنجاح'
+      })
+    } catch (error: any) {
+      results.push({
+        function: 'إدارة الرموز الثابتة',
+        status: '❌ فشل',
+        details: error.message
+      })
+    }
+
+    // اختبار 4: قاعدة البيانات
+    try {
+      const dbResponse = await fetch('/api/database')
+      const dbData = await dbResponse.json()
+      results.push({
+        function: 'قاعدة البيانات',
+        status: dbResponse.ok ? '✅ نجح' : '❌ فشل',
+        details: dbData.error || 'تم الاتصال بقاعدة البيانات بنجاح'
+      })
+    } catch (error: any) {
+      results.push({
+        function: 'قاعدة البيانات',
+        status: '❌ فشل',
+        details: error.message
+      })
+    }
+
+    // اختبار 5: إدارة العملاء
+    try {
+      const customersResponse = await fetch('/api/customers')
+      const customersData = await customersResponse.json()
+      results.push({
+        function: 'إدارة العملاء',
+        status: customersResponse.ok ? '✅ نجح' : '❌ فشل',
+        details: customersData.error || 'تم تحميل العملاء بنجاح'
+      })
+    } catch (error: any) {
+      results.push({
+        function: 'إدارة العملاء',
+        status: '❌ فشل',
+        details: error.message
+      })
+    }
+
+    // اختبار 6: Health Check
+    try {
+      const healthResponse = await fetch('/api/health')
+      const healthData = await healthResponse.json()
+      results.push({
+        function: 'فحص صحة النظام',
+        status: healthResponse.ok ? '✅ نجح' : '❌ فشل',
+        details: healthData.error || 'النظام يعمل بشكل طبيعي'
+      })
+    } catch (error: any) {
+      results.push({
+        function: 'فحص صحة النظام',
+        status: '❌ فشل',
+        details: error.message
+      })
+    }
+
+    // عرض النتائج
+    const successCount = results.filter(r => r.status.includes('✅')).length
+    const totalCount = results.length
+    
+    let resultMessage = `📊 نتائج الاختبار الشامل:\n\n`
+    resultMessage += `النجاح: ${successCount}/${totalCount}\n\n`
+    
+    results.forEach(result => {
+      resultMessage += `${result.status} ${result.function}\n`
+      resultMessage += `   ${result.details}\n\n`
+    })
+
+    if (successCount === totalCount) {
+      resultMessage += `🎉 جميع الاختبارات نجحت! النظام يعمل بشكل مثالي.`
+    } else {
+      resultMessage += `⚠️ بعض الاختبارات فشلت. يرجى مراجعة الإعدادات.`
+    }
+
+    alert(resultMessage)
+  }
+
   // Load permanent codes from API
   const loadPermanentCodesFromAPI = async () => {
     setIsLoadingCodes(true)
@@ -2851,6 +2986,24 @@ export default function AdminDashboard() {
                   }}
                 >
                   📊 تحديث المقاييس
+                </button>
+                
+                <button
+                  onClick={testAllAdminFunctions}
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '15px 30px',
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)'
+                  }}
+                >
+                  🔍 اختبار شامل للنظام
                 </button>
               </div>
               
