@@ -46,3 +46,7 @@ coverage/
 # Temporary folders
 tmp/
 temp/
+
+# Backup folders
+git backup/
+Comprehensive backup/
