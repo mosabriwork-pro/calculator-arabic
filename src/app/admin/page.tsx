@@ -2413,7 +2413,42 @@ export default function AdminDashboard() {
                       transition: 'all 0.3s ease'
                     }}
                   >
-                    🔐 إنشاء رمز وصول
+                    🔑 إنشاء رمز لأي بريد
+                  </button>
+                  
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await fetch('/api/send-email', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email: 'mosabrihelp@gmail.com' })
+                        })
+                        
+                        const data = await response.json()
+                        
+                        if (response.ok) {
+                          alert(`✅ تم إرسال رمز الوصول إلى mosabrihelp@gmail.com\n\nالرمز: ${data.accessCode}`)
+                        } else {
+                          alert(`❌ خطأ: ${data.error}`)
+                        }
+                      } catch (error) {
+                        alert(`❌ خطأ في الاتصال: ${error}`)
+                      }
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    📧 اختبار إرسال للبريد المرسل
                   </button>
                 </div>
               </div>
