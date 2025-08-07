@@ -132,14 +132,9 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
     return transporter
   }
 
-  // Verify credentials first
-  const EMAIL_USER = process.env.EMAIL_USER
-  const EMAIL_PASS = process.env.EMAIL_PASS
-
-  if (!EMAIL_USER || !EMAIL_PASS) {
-    console.error('Missing environment variables: EMAIL_USER or EMAIL_PASS not set')
-    throw new Error('Email configuration missing: EMAIL_USER and EMAIL_PASS must be set in environment variables')
-  }
+  // Use default email configuration if environment variables are not set
+  const EMAIL_USER = process.env.EMAIL_USER || 'mosabri.pro@gmail.com'
+  const EMAIL_PASS = process.env.EMAIL_PASS || 'mosabri2024pro'
 
   // Create new transporter with optimized settings
   transporter = nodemailer.createTransport({
@@ -298,61 +293,6 @@ export async function POST(request: NextRequest) {
     // Generate access code
     const accessCode = generateAccessCode(email)
 
-    // Check if email configuration is available
-    const EMAIL_USER = process.env.EMAIL_USER
-    const EMAIL_PASS = process.env.EMAIL_PASS
-
-    if (!EMAIL_USER || !EMAIL_PASS) {
-      // Fallback: Return success without sending email, but save customer data
-      console.log(`Email configuration missing. Generating access code for ${email}: ${accessCode}`)
-      
-      // Record customer activity
-      const today = new Date()
-      
-      // دالة لتحويل الأرقام الإنجليزية إلى العربية
-      const convertToArabicNumbers = (num: number): string => {
-        const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
-        return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
-      }
-      
-      // تاريخ بداية الاشتراك (اليوم الحالي)
-      const month = today.getMonth() + 1
-      const day = today.getDate()
-      const year = today.getFullYear()
-      const subscriptionStart = `${convertToArabicNumbers(day).padStart(2, '٠')}/${convertToArabicNumbers(month).padStart(2, '٠')}/${convertToArabicNumbers(year)}`
-      
-      // تاريخ نهاية الاشتراك (بعد سنة)
-      const subscriptionEnd = new Date(today)
-      subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1)
-      const endMonth = subscriptionEnd.getMonth() + 1
-      const endDay = subscriptionEnd.getDate()
-      const endYear = subscriptionEnd.getFullYear()
-      const subscriptionEndFormatted = `${convertToArabicNumbers(endDay).padStart(2, '٠')}/${convertToArabicNumbers(endMonth).padStart(2, '٠')}/${convertToArabicNumbers(endYear)}`
-      
-      saveCustomer(email, {
-        lastActivity: new Date().toLocaleString('ar-SA'),
-        lastUpdated: new Date().toISOString(),
-        accessCodeSent: true,
-        accessCode: accessCode,
-        email,
-        subscriptionStart: subscriptionStart,
-        subscriptionEnd: subscriptionEndFormatted,
-        isExpired: false
-      })
-
-      const duration = Date.now() - startTime
-      
-      console.log(`Access code generated for ${email} in ${duration}ms (email not sent - configuration missing)`)
-
-      return NextResponse.json({
-        success: true,
-        message: 'تم إنشاء رمز الوصول بنجاح (ملاحظة: لم يتم إرسال البريد الإلكتروني - إعدادات البريد غير متوفرة)',
-        accessCode,
-        duration,
-        warning: 'يرجى إضافة EMAIL_USER و EMAIL_PASS في متغيرات البيئة على Railway'
-      })
-    }
-
     // Get transporter
     const transporter = await getTransporter()
 
@@ -431,7 +371,7 @@ export async function POST(request: NextRequest) {
 
     // Send email with optimized settings
     const mailOptions = {
-      from: `"حاسبة موصبري" <${process.env.EMAIL_USER}>`,
+      from: `"حاسبة موصبري" <${process.env.EMAIL_USER || 'mosabri.pro@gmail.com'}>`,
       to: email,
       subject: 'رمز الوصول - حاسبة موصبري المتقدمة',
       html: emailContent,

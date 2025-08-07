@@ -1,0 +1,17 @@
+# انسخ هذا الملف إلى .env.local أو أضف هذه المتغيرات في Railway
+
+# Email Configuration
+EMAIL_USER=mosabri.pro@gmail.com
+EMAIL_PASS=mosabri2024pro
+
+# App Configuration
+APP_SECRET=mosabri-calculator-secret-key-2024
+ADMIN_PASSWORD=admin123
+
+# Database Configuration
+DATABASE_URL=your-postgresql-url-here
+
+# Environment
+NODE_ENV=production
+PORT=3000
+NEXT_PUBLIC_DOMAIN=mosabri.top
