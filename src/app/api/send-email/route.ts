@@ -287,12 +287,16 @@ setInterval(() => {
   // })
 }, 60 * 1000) // Clean every minute
 
-async function sendWithRetry(trans: nodemailer.Transporter, options: nodemailer.SendMailOptions, maxAttempts = 3): Promise<void> {
+async function sendWithRetry(
+  trans: nodemailer.Transporter,
+  options: nodemailer.SendMailOptions,
+  maxAttempts = 3
+): Promise<nodemailer.SentMessageInfo> {
   let lastError: any
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      await trans.sendMail(options)
-      return
+      const info = await trans.sendMail(options)
+      return info
     } catch (err: any) {
       lastError = err
       console.error(`sendMail attempt ${attempt} failed:`, err?.code || err?.message)
@@ -632,13 +636,21 @@ export async function POST(request: NextRequest) {
       </div>
     `
 
-    // Send email with optimized settings
-    console.log('📤 Sending email...')
+    const textContent = `موصبري برو - رمز الوصول الى الآلة\n\nمرحبا،\nهذا هو رمز الوصول الخاص بك: ${accessCode}\n\nخطوات الاستخدام:\n1) ادخل إلى صفحة تسجيل الدخول: https://mosabri.top/login\n2) اكتب بريدك: ${email}\n3) أدخل الرمز: ${accessCode}\n\nإن لم تطلب هذا البريد فتجاهله.`
+
     const mailOptions: nodemailer.SendMailOptions = {
       from: `"حاسبة موصبري" <${process.env.EMAIL_USER || 'mosabrihelp@gmail.com'}>`,
       to: email,
       subject: 'موصبري برو - رمز الوصول الى الآلة',
       html: emailContent,
+      text: textContent,
+      replyTo: process.env.EMAIL_USER || 'mosabrihelp@gmail.com',
+      headers: {
+        'List-Unsubscribe': '<mailto:mosabrihelp@gmail.com?subject=unsubscribe>',
+        'X-Priority': '1 (Highest)',
+        'X-MSMail-Priority': 'High',
+        Importance: 'High'
+      },
       priority: 'high' as const
     }
 
@@ -650,9 +662,10 @@ export async function POST(request: NextRequest) {
 
     // فعلياً: أرسل البريد مع إعادة المحاولة
     try {
-      await sendWithRetry(trans, mailOptions, 3)
+      const info = await sendWithRetry(trans, mailOptions, 3)
       console.log('✅ Email delivered (SMTP)')
-      appendEmailRecord({ email, status: 'success' })
+      console.log('✉️ messageId:', info?.messageId, '| response:', info?.response)
+      appendEmailRecord({ email, status: 'success', message: `messageId=${info?.messageId} response=${info?.response}` })
     } catch (sendErr: any) {
       console.error('❌ Final email send failure:', sendErr?.code || sendErr?.message)
       appendEmailRecord({ email, status: 'failed', message: sendErr?.message })
