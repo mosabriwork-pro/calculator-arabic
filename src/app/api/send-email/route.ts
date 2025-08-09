@@ -637,7 +637,7 @@ export async function POST(request: NextRequest) {
     const mailOptions: nodemailer.SendMailOptions = {
       from: `"حاسبة موصبري" <${process.env.EMAIL_USER || 'mosabrihelp@gmail.com'}>`,
       to: email,
-      subject: 'رمز الوصول - حاسبة موصبري المتقدمة',
+      subject: 'موصبري برو - رمز الوصول الى الآلة',
       html: emailContent,
       priority: 'high' as const
     }
