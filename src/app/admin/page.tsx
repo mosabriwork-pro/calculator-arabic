@@ -722,6 +722,13 @@ export default function AdminDashboard() {
           } : c)
         )
         alert(`تم إعادة تفعيل الحساب ${email} بنجاح\nتاريخ بداية الاشتراك الجديد: ${subscriptionStart}\nتاريخ نهاية الاشتراك: ${subscriptionEndFormatted}`)
+        try {
+          const customersRes = await fetch('/api/customers')
+          const customersData = await customersRes.json()
+          if (customersData.success && Array.isArray(customersData.customers)) {
+            setCustomers(customersData.customers)
+          }
+        } catch (_) {}
       } else {
         console.error('Failed to reactivate customer:', data.error)
         alert('فشل في إعادة تفعيل الحساب')
@@ -971,6 +978,13 @@ export default function AdminDashboard() {
 
         if (response.ok) {
           alert(`✅ تم إنشاء رمز الوصول!\n\nالبريد: ${email}\nالرمز: ${data.accessCode}\n\nتم إرسال الرمز إلى البريد الإلكتروني`)
+          try {
+            const customersRes = await fetch('/api/customers')
+            const customersData = await customersRes.json()
+            if (customersData.success && Array.isArray(customersData.customers)) {
+              setCustomers(customersData.customers)
+            }
+          } catch (_) {}
         } else {
           alert(`❌ خطأ: ${data.error}`)
         }
