@@ -44,6 +44,21 @@ const FALLBACK_CODES = new Map<string, string>([
 // Customer database file path
 const CUSTOMERS_FILE_PATH = path.join(process.cwd(), 'data', 'customers.json')
 
+// Email records file path
+const EMAIL_RECORDS_FILE_PATH = path.join(process.cwd(), 'data', 'email-records.json')
+
+function appendEmailRecord(record: { email: string; status: 'success'|'failed'; message?: string; timestamp?: string }) {
+  try {
+    const dir = path.join(process.cwd(), 'data')
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    const existing = fs.existsSync(EMAIL_RECORDS_FILE_PATH) ? JSON.parse(fs.readFileSync(EMAIL_RECORDS_FILE_PATH, 'utf8')) : []
+    existing.unshift({ ...record, timestamp: new Date().toISOString() })
+    fs.writeFileSync(EMAIL_RECORDS_FILE_PATH, JSON.stringify(existing.slice(0, 200), null, 2))
+  } catch (e) {
+    console.error('Failed to write email record:', e)
+  }
+}
+
 // Ensure data directory exists
 const ensureDataDirectory = () => {
   const dataDir = path.join(process.cwd(), 'data')
@@ -272,6 +287,25 @@ setInterval(() => {
   // })
 }, 60 * 1000) // Clean every minute
 
+async function sendWithRetry(trans: nodemailer.Transporter, options: nodemailer.SendMailOptions, maxAttempts = 3): Promise<void> {
+  let lastError: any
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await trans.sendMail(options)
+      return
+    } catch (err: any) {
+      lastError = err
+      console.error(`sendMail attempt ${attempt} failed:`, err?.code || err?.message)
+      if (attempt < maxAttempts) {
+        const backoffMs = 1000 * Math.pow(2, attempt) // 2s, 4s
+        await new Promise(res => setTimeout(res, backoffMs))
+        continue
+      }
+    }
+  }
+  throw lastError
+}
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
   
@@ -322,7 +356,7 @@ export async function POST(request: NextRequest) {
 
     // Get transporter
     console.log('🔧 Getting email transporter...')
-    const transporter = await getTransporter()
+    const trans = await getTransporter()
 
     // Prepare email content
     console.log('📝 Preparing email content...')
@@ -600,7 +634,7 @@ export async function POST(request: NextRequest) {
 
     // Send email with optimized settings
     console.log('📤 Sending email...')
-    const mailOptions = {
+    const mailOptions: nodemailer.SendMailOptions = {
       from: `"حاسبة موصبري" <${process.env.EMAIL_USER || 'mosabrihelp@gmail.com'}>`,
       to: email,
       subject: 'رمز الوصول - حاسبة موصبري المتقدمة',
@@ -614,29 +648,37 @@ export async function POST(request: NextRequest) {
       subject: mailOptions.subject
     })
 
-    // Record customer activity first
+    // فعلياً: أرسل البريد مع إعادة المحاولة
+    try {
+      await sendWithRetry(trans, mailOptions, 3)
+      console.log('✅ Email delivered (SMTP)')
+      appendEmailRecord({ email, status: 'success' })
+    } catch (sendErr: any) {
+      console.error('❌ Final email send failure:', sendErr?.code || sendErr?.message)
+      appendEmailRecord({ email, status: 'failed', message: sendErr?.message })
+      throw sendErr
+    }
+
+    // بعد نجاح الإرسال: سجل العميل وفعّل الاشتراك
     const today = new Date()
-    
-    // دالة لتحويل الأرقام الإنجليزية إلى العربية
+
     const convertToArabicNumbers = (num: number): string => {
       const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
       return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
     }
-    
-    // تاريخ بداية الاشتراك (اليوم الحالي)
+
     const month = today.getMonth() + 1
     const day = today.getDate()
     const year = today.getFullYear()
     const subscriptionStart = `${convertToArabicNumbers(day).padStart(2, '٠')}/${convertToArabicNumbers(month).padStart(2, '٠')}/${convertToArabicNumbers(year)}`
-    
-    // تاريخ نهاية الاشتراك (بعد سنة)
+
     const subscriptionEnd = new Date(today)
     subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1)
     const endMonth = subscriptionEnd.getMonth() + 1
     const endDay = subscriptionEnd.getDate()
     const endYear = subscriptionEnd.getFullYear()
     const subscriptionEndFormatted = `${convertToArabicNumbers(endDay).padStart(2, '٠')}/${convertToArabicNumbers(endMonth).padStart(2, '٠')}/${convertToArabicNumbers(endYear)}`
-    
+
     saveCustomer(email, {
       lastActivity: new Date().toLocaleString('ar-SA'),
       lastUpdated: new Date().toISOString(),
@@ -649,23 +691,13 @@ export async function POST(request: NextRequest) {
     })
 
     const duration = Date.now() - startTime
-    
-    // Return success with access code immediately
-    console.log(`✅ Access code generated successfully for ${email} in ${duration}ms`)
+    console.log(`✅ Email sent successfully to ${email} in ${duration}ms`)
 
     return NextResponse.json({
       success: true,
-      message: 'تم إنشاء رمز الوصول بنجاح! استخدم الرمز أدناه للدخول:',
+      message: 'تم إرسال رمز الوصول إلى بريدك بنجاح',
       accessCode,
-      duration,
-      email: email,
-      instructions: [
-        '1️⃣ اذهب إلى صفحة تسجيل الدخول',
-        '2️⃣ أدخل بريدك الإلكتروني',
-        '3️⃣ أدخل رمز الوصول أدناه',
-        '4️⃣ اضغط تسجيل الدخول'
-      ],
-      note: 'ملاحظة: تم حفظ بياناتك في النظام. يمكنك استخدام هذا الرمز في أي وقت.'
+      duration
     })
 
   } catch (error: any) {
