@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation'
 const Pie = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Pie })), { ssr: false })
 const Bar = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Bar })), { ssr: false })
 
+
+
 interface PlayerData {
   name: string
   age: number
@@ -28,6 +30,20 @@ interface NutritionPlan {
     min: number
     max: number
   }
+}
+
+// Add new interface for input field values
+interface InputFieldValues {
+  age: string
+  weight: string
+  height: string
+}
+
+// Add interface for validation hints
+interface ValidationHints {
+  age: string
+  weight: string
+  height: string
 }
 
 // Disable SSR for the entire calculator component
@@ -84,6 +100,61 @@ const Calculator = dynamic(() => Promise.resolve(() => {
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [showResults, setShowResults] = useState(false)
 
+  // Add new state for input field values (strings)
+  const [inputValues, setInputValues] = useState<InputFieldValues>({
+    age: '9',
+    weight: '30',
+    height: '175'
+  })
+
+  // Add state for validation hints
+  const [validationHints, setValidationHints] = useState<ValidationHints>({
+    age: '',
+    weight: '',
+    height: ''
+  })
+
+  // Commit function for input validation and clamping
+  const commitInput = (field: keyof InputFieldValues, valueString: string, min: number, max: number): string => {
+    const trimmed = valueString.trim()
+    if (trimmed === '') {
+      return ''
+    }
+    
+    const num = Number(valueString)
+    if (Number.isNaN(num)) {
+      return ''
+    }
+    
+    const clamped = Math.max(min, Math.min(max, Math.floor(num)))
+    return String(clamped)
+  }
+
+  // Handle input field blur (validation on blur)
+  const handleInputBlur = (field: keyof InputFieldValues, min: number, max: number) => {
+    const currentValue = inputValues[field]
+    const committedValue = commitInput(field, currentValue, min, max)
+    
+    if (committedValue !== currentValue) {
+      setInputValues(prev => ({ ...prev, [field]: committedValue }))
+      
+      // Update the numeric value in playerData if we have a valid number
+      if (committedValue !== '') {
+        const numValue = Number(committedValue)
+        if (field === 'age') {
+          setPlayerData(prev => ({ ...prev, age: numValue }))
+        } else if (field === 'weight') {
+          setPlayerData(prev => ({ ...prev, weight: numValue }))
+        } else if (field === 'height') {
+          setPlayerData(prev => ({ ...prev, height: numValue }))
+        }
+      }
+    }
+    
+    // Clear validation hint
+    setValidationHints(prev => ({ ...prev, [field]: '' }))
+  }
+
   // Load data from localStorage on mount
   useEffect(() => {
     setMounted(true)
@@ -96,17 +167,35 @@ const Calculator = dynamic(() => Promise.resolve(() => {
           const parsed = JSON.parse(savedData)
           // Validate the parsed data before setting it
           if (parsed && typeof parsed === 'object') {
+            const age = typeof parsed.age === 'number' && parsed.age >= 9 && parsed.age <= 120 ? parsed.age : 9
+            const weight = typeof parsed.weight === 'number' && parsed.weight >= 20 && parsed.weight <= 250 ? parsed.weight : 30
+            const height = typeof parsed.height === 'number' && parsed.height >= 140 && parsed.height <= 210 ? parsed.height : 175
+            
             setPlayerData(prev => ({
               ...prev,
               name: parsed.name || '',
-              age: typeof parsed.age === 'number' && parsed.age >= 9 && parsed.age <= 65 ? parsed.age : 9,
-              weight: typeof parsed.weight === 'number' && parsed.weight >= 20 && parsed.weight <= 200 ? parsed.weight : 30,
-              height: typeof parsed.height === 'number' && parsed.height >= 100 && parsed.height <= 250 ? parsed.height : 175,
+              age,
+              weight,
+              height,
               gender: parsed.gender === 'أنثى' ? 'أنثى' : 'ذكر',
               position: parsed.position || 'محور (دفاعي أو هجومي)',
               activityLevel: parsed.activityLevel || 'نشاط متوسط (3-4 أيام تمرين اسبوعيا)'
             }))
+            
+            // Initialize input values with the numeric values converted to strings
+            setInputValues({
+              age: age.toString(),
+              weight: weight.toString(),
+              height: height.toString()
+            })
           }
+        } else {
+          // No saved data, initialize with default values
+          setInputValues({
+            age: '9',
+            weight: '30',
+            height: '175'
+          })
         }
 
         const savedPlan = localStorage.getItem('selectedPlan')
@@ -156,21 +245,37 @@ const Calculator = dynamic(() => Promise.resolve(() => {
   // Validation function
   const validateInputs = () => {
     const errors: string[] = []
+    const hints: ValidationHints = { age: '', weight: '', height: '' }
     
     if (!playerData.name.trim()) {
       errors.push('يرجى إدخال اسم اللاعب')
     }
     
-    if (playerData.age < 9 || playerData.age > 65) {
-      errors.push('العمر يجب أن يكون بين 9 و 65 سنة')
+    // Check age input
+    if (inputValues.age === '') {
+      hints.age = 'الرجاء إدخال العمر (≥ 9)'
+      errors.push('العمر مطلوب')
+    } else if (playerData.age < 9 || playerData.age > 120) {
+      hints.age = 'العمر يجب أن يكون بين 9 و 120 سنة'
+      errors.push('العمر يجب أن يكون بين 9 و 120 سنة')
     }
     
-    if (playerData.weight < 20 || playerData.weight > 200) {
-      errors.push('الوزن يجب أن يكون بين 20 و 200 كجم')
+    // Check weight input
+    if (inputValues.weight === '') {
+      hints.weight = 'الرجاء إدخال الوزن بين 20 و 250 كجم'
+      errors.push('الوزن مطلوب')
+    } else if (playerData.weight < 20 || playerData.weight > 250) {
+      hints.weight = 'الوزن يجب أن يكون بين 20 و 250 كجم'
+      errors.push('الوزن يجب أن يكون بين 20 و 250 كجم')
     }
     
-    if (playerData.height < 100 || playerData.height > 250) {
-      errors.push('الطول يجب أن يكون بين 100 و 250 سم')
+    // Check height input
+    if (inputValues.height === '') {
+      hints.height = 'الرجاء إدخال الطول بين 140 و 210 سم'
+      errors.push('الطول مطلوب')
+    } else if (playerData.height < 140 || playerData.height > 210) {
+      hints.height = 'الطول يجب أن يكون بين 140 و 210 سم'
+      errors.push('الطول يجب أن يكون بين 140 و 210 سم')
     }
     
     if (!playerData.gender || (playerData.gender !== 'ذكر' && playerData.gender !== 'أنثى')) {
@@ -178,6 +283,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
     }
     
     setValidationErrors(errors)
+    setValidationHints(hints)
     return errors.length === 0
   }
 
@@ -310,6 +416,15 @@ const Calculator = dynamic(() => Promise.resolve(() => {
           fat: { min: 0, max: 0 },
           carbs: { min: 0, max: 0 },
           delta_display: { text_min: null, text_max: null, color: null },
+          carbs_display: {
+            base_min: 0,
+            base_max: 0,
+            base_value: 0,
+            delta_g_min: null,
+            delta_g_max: null,
+            note_text: null,
+            note_color: null
+          },
           notes: ''
         },
         proteinRange: { min: 0, max: 0 },
@@ -322,24 +437,34 @@ const Calculator = dynamic(() => Promise.resolve(() => {
 
   // Handle calculate button click
   const handleCalculate = () => {
-    try {
-      if (validateInputs()) {
-        setIsCalculating(true)
-        setShowResults(true)
-        
-        // Simulate calculation delay
-        setTimeout(() => {
-          setIsCalculating(false)
-          // Scroll to results
-          if (typeof window !== 'undefined') {
-            document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' })
-          }
-        }, 1000)
-      }
-    } catch (error) {
-      console.error('Error in handleCalculate:', error)
+    // Commit all input values before validation
+    const committedAge = commitInput('age', inputValues.age, 9, 120)
+    const committedWeight = commitInput('weight', inputValues.weight, 20, 250)
+    const committedHeight = commitInput('height', inputValues.height, 140, 210)
+    
+    // Update input values with committed values
+    setInputValues({
+      age: committedAge,
+      weight: committedWeight,
+      height: committedHeight
+    })
+    
+    // Update playerData with committed numeric values
+    if (committedAge !== '') {
+      setPlayerData(prev => ({ ...prev, age: Number(committedAge) }))
+    }
+    if (committedWeight !== '') {
+      setPlayerData(prev => ({ ...prev, weight: Number(committedWeight) }))
+    }
+    if (committedHeight !== '') {
+      setPlayerData(prev => ({ ...prev, height: Number(committedHeight) }))
+    }
+    
+    // Now validate and calculate
+    if (validateInputs()) {
+      setIsCalculating(true)
+      setShowResults(true)
       setIsCalculating(false)
-      alert('حدث خطأ أثناء الحساب. يرجى المحاولة مرة أخرى.')
     }
   }
 
@@ -970,29 +1095,29 @@ const Calculator = dynamic(() => Promise.resolve(() => {
         position: playerData.position,
         activityLevel: playerData.activityLevel,
         country: 'السعودية', // يمكن إضافته لاحقاً
-        calories: nutritionPlan.calories,
-        protein: nutritionPlan.protein,
-        carbs: nutritionPlan.carbs,
-        fat: nutritionPlan.fat,
-        water: nutritionPlan.water,
-        idealWeight: nutritionPlan.idealWeight.min,
+        calories: nutritionPlan.calories || 0,
+        protein: nutritionPlan.protein || 0,
+        carbs: nutritionPlan.carbs || 0,
+        fat: nutritionPlan.fat || 0,
+        water: nutritionPlan.water || 0,
+        idealWeight: nutritionPlan.idealWeight?.min || 0,
         weightGain: {
-          calories: Math.round(nutritionPlan.calories * 1.1),
-          protein: Math.round(nutritionPlan.protein * 1.1),
-          carbs: Math.round(nutritionPlan.carbs * 1.1),
-          fat: Math.round(nutritionPlan.fat * 1.1)
+          calories: Math.round((nutritionPlan.calories || 0) * 1.1),
+          protein: Math.round((nutritionPlan.protein || 0) * 1.1),
+          carbs: Math.round((nutritionPlan.carbs || 0) * 1.1),
+          fat: Math.round((nutritionPlan.fat || 0) * 1.1)
         },
         maintenance: {
-          calories: nutritionPlan.calories,
-          protein: nutritionPlan.protein,
-          carbs: nutritionPlan.carbs,
-          fat: nutritionPlan.fat
+          calories: nutritionPlan.calories || 0,
+          protein: nutritionPlan.protein || 0,
+          carbs: nutritionPlan.carbs || 0,
+          fat: nutritionPlan.fat || 0
         },
         weightLoss: {
-          calories: Math.round(nutritionPlan.calories * 0.9),
-          protein: Math.round(nutritionPlan.protein * 1.1),
-          carbs: Math.round(nutritionPlan.carbs * 0.8),
-          fat: Math.round(nutritionPlan.fat * 0.9)
+          calories: Math.round((nutritionPlan.calories || 0) * 0.9),
+          protein: Math.round((nutritionPlan.protein || 0) * 1.1),
+          carbs: Math.round((nutritionPlan.carbs || 0) * 0.8),
+          fat: Math.round((nutritionPlan.fat || 0) * 0.9)
         }
       }
 
@@ -1047,7 +1172,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
   const pieChartData = {
     labels: ['بروتين', 'كربوهيدرات', 'دهون'],
     datasets: [{
-      data: [nutritionPlan.protein * 4, nutritionPlan.carbs * 4, nutritionPlan.fat * 9],
+      data: [(nutritionPlan.protein || 0) * 4, (nutritionPlan.carbs || 0) * 4, (nutritionPlan.fat || 0) * 9],
       backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b'],
       borderWidth: 2,
       borderColor: '#ffffff'
@@ -1058,7 +1183,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
     labels: ['السعرات الحرارية', 'البروتين', 'الكربوهيدرات', 'الدهون'],
     datasets: [{
       label: 'القيم اليومية',
-      data: [nutritionPlan.calories / 20, nutritionPlan.protein, nutritionPlan.carbs, nutritionPlan.fat],
+      data: [(nutritionPlan.calories || 0) / 20, nutritionPlan.protein || 0, nutritionPlan.carbs || 0, nutritionPlan.fat || 0],
       backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'],
       borderWidth: 1,
       borderColor: '#ffffff'
@@ -1170,18 +1295,12 @@ const Calculator = dynamic(() => Promise.resolve(() => {
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>العمر:</label>
             <input
               type="number"
-              value={playerData.age || ''}
+              value={inputValues.age}
               onChange={(e) => {
-                const value = e.target.value;
-                if (value === '') {
-                  setPlayerData({...playerData, age: 0});
-                } else {
-                  const numValue = parseInt(value);
-                  if (!isNaN(numValue) && numValue >= 9 && numValue <= 65) {
-                    setPlayerData({...playerData, age: numValue});
-                  }
-                }
+                const value = e.target.value
+                setInputValues(prev => ({ ...prev, age: value }))
               }}
+              onBlur={() => handleInputBlur('age', 9, 120)}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -1191,9 +1310,23 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 boxSizing: 'border-box'
               }}
               min="9"
-              max="65"
-              placeholder="9"
+              max="120"
+              step="1"
+                              placeholder="أدخل عمرك"
+              inputMode="numeric"
+              dir="ltr"
+              lang="ar"
             />
+            {validationHints.age && (
+              <p style={{ 
+                color: '#dc2626', 
+                fontSize: '0.8rem', 
+                margin: '5px 0 0 0',
+                textAlign: 'right'
+              }}>
+                {validationHints.age}
+              </p>
+            )}
           </div>
 
           <div>
@@ -1219,18 +1352,12 @@ const Calculator = dynamic(() => Promise.resolve(() => {
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>الوزن (كجم):</label>
             <input
               type="number"
-              value={playerData.weight || ''}
+              value={inputValues.weight}
               onChange={(e) => {
-                const value = e.target.value;
-                if (value === '') {
-                  setPlayerData({...playerData, weight: 0});
-                } else {
-                  const numValue = parseFloat(value);
-                  if (!isNaN(numValue) && numValue >= 20 && numValue <= 200) {
-                    setPlayerData({...playerData, weight: numValue});
-                  }
-                }
+                const value = e.target.value
+                setInputValues(prev => ({ ...prev, weight: value }))
               }}
+              onBlur={() => handleInputBlur('weight', 20, 250)}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -1240,27 +1367,35 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 boxSizing: 'border-box'
               }}
               min="20"
-              max="200"
-              placeholder="30"
+              max="250"
+              step="1"
+                              placeholder="أدخل وزنك بالكيلوغرام"
+              inputMode="numeric"
+              dir="ltr"
+              lang="ar"
             />
+            {validationHints.weight && (
+              <p style={{ 
+                color: '#dc2626', 
+                fontSize: '0.8rem', 
+                margin: '5px 0 0 0',
+                textAlign: 'right'
+              }}>
+                {validationHints.weight}
+              </p>
+            )}
           </div>
 
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>الطول (سم):</label>
             <input
               type="number"
-              value={playerData.height || ''}
+              value={inputValues.height}
               onChange={(e) => {
-                const value = e.target.value;
-                if (value === '') {
-                  setPlayerData({...playerData, height: 0});
-                } else {
-                  const numValue = parseFloat(value);
-                  if (!isNaN(numValue) && numValue >= 100 && numValue <= 250) {
-                    setPlayerData({...playerData, height: numValue});
-                  }
-                }
+                const value = e.target.value
+                setInputValues(prev => ({ ...prev, height: value }))
               }}
+              onBlur={() => handleInputBlur('height', 140, 210)}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -1269,10 +1404,24 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 fontSize: '16px',
                 boxSizing: 'border-box'
               }}
-              min="100"
-              max="250"
-              placeholder="175"
+              min="140"
+              max="210"
+              step="1"
+                              placeholder="أدخل طولك بالسنتيمتر"
+              inputMode="numeric"
+              dir="ltr"
+              lang="ar"
             />
+            {validationHints.height && (
+              <p style={{ 
+                color: '#dc2626', 
+                fontSize: '0.8rem', 
+                margin: '5px 0 0 0',
+                textAlign: 'right'
+              }}>
+                {validationHints.height}
+              </p>
+            )}
           </div>
 
           <div>
@@ -1410,7 +1559,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h3 style={{ color: '#22c55e', marginBottom: '10px', fontSize: '0.9rem' }}>السعرات الحرارية</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.baseCalories} سعرة
+                  {nutritionPlan.baseCalories || 0} سعرة
                 </p>
                 {selectedPlan !== 'maintain' && (
                   <p style={{
@@ -1419,7 +1568,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                     color: selectedPlan === 'gain' ? '#22c55e' : '#ef4444',
                     fontWeight: 'bold'
                   }}>
-                    {selectedPlan === 'gain' ? '+' : '-'}{Math.abs(nutritionPlan.macrosDetail.delta_display.text_min)} إلى {Math.abs(nutritionPlan.macrosDetail.delta_display.text_max)} من الكربوهيدرات
+                    {selectedPlan === 'gain' ? '+' : '-'}{Math.abs(nutritionPlan.macrosDetail?.delta_display?.text_min || 0)} إلى {Math.abs(nutritionPlan.macrosDetail?.delta_display?.text_max || 0)} من الكربوهيدرات
                   </p>
                 )}
               </div>
@@ -1433,7 +1582,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h3 style={{ color: '#3b82f6', marginBottom: '10px', fontSize: '0.9rem' }}>البروتين</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.proteinRange.min}-{nutritionPlan.proteinRange.max} جرام
+                  {nutritionPlan.proteinRange?.min || 0}-{nutritionPlan.proteinRange?.max || 0} جرام
                 </p>
               </div>
 
@@ -1446,9 +1595,12 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h3 style={{ color: '#f59e0b', marginBottom: '10px', fontSize: '0.9rem' }}>الكربوهيدرات</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.macrosDetail.carbs_display.base_min}-{nutritionPlan.macrosDetail.carbs_display.base_max} غ
+                  {nutritionPlan.macrosDetail?.carbs_display?.base_min && nutritionPlan.macrosDetail?.carbs_display?.base_max 
+                    ? `${nutritionPlan.macrosDetail.carbs_display.base_min}-${nutritionPlan.macrosDetail.carbs_display.base_max} غ`
+                    : '0-0 غ'
+                  }
                 </p>
-                {nutritionPlan.macrosDetail.carbs_display.note_text && (
+                {nutritionPlan.macrosDetail?.carbs_display?.note_text && (
                   <p style={{
                     fontSize: '0.8rem',
                     margin: '5px 0 0 0',
@@ -1469,7 +1621,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h3 style={{ color: '#ef4444', marginBottom: '10px', fontSize: '0.9rem' }}>الدهون</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.fatRange.min}-{nutritionPlan.fatRange.max} جرام
+                  {nutritionPlan.fatRange?.min || 0}-{nutritionPlan.fatRange?.max || 0} جرام
                 </p>
               </div>
 
@@ -1482,7 +1634,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h3 style={{ color: '#06b6d4', marginBottom: '10px', fontSize: '0.9rem' }}>الماء</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.water} لتر
+                  {nutritionPlan.water || 0} لتر
                 </p>
               </div>
 
@@ -1495,7 +1647,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h3 style={{ color: '#8b5cf6', marginBottom: '10px', fontSize: '0.9rem' }}>الوزن المثالي</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.idealWeight.min}-{nutritionPlan.idealWeight.max} كجم
+                  {nutritionPlan.idealWeight?.min || 0}-{nutritionPlan.idealWeight?.max || 0} كجم
                 </p>
               </div>
             </div>
@@ -1535,7 +1687,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h4 style={{ color: '#22c55e', marginBottom: '10px', fontSize: '1rem' }}>السعرات الأساسية</h4>
                 <p style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#1a472a', margin: '5px 0' }}>
-                  {nutritionPlan.baseCalories} سعرة
+                  {nutritionPlan.baseCalories || 0} سعرة
                 </p>
                 <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '5px 0' }}>
                   السعرات المطلوبة للمحافظة
@@ -1552,10 +1704,10 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 <p style={{ 
                   fontSize: '1.1rem', 
                   fontWeight: 'bold', 
-                  color: nutritionPlan.caloriesAdjustment > 0 ? '#22c55e' : nutritionPlan.caloriesAdjustment < 0 ? '#ef4444' : '#1a472a',
+                  color: (nutritionPlan.caloriesAdjustment || 0) > 0 ? '#22c55e' : (nutritionPlan.caloriesAdjustment || 0) < 0 ? '#ef4444' : '#1a472a',
                   margin: '5px 0'
                 }}>
-                  {nutritionPlan.caloriesAdjustment > 0 ? '+' : ''}{nutritionPlan.caloriesAdjustment} سعرة
+                  {nutritionPlan.caloriesAdjustment > 0 ? '+' : ''}{nutritionPlan.caloriesAdjustment || 0} سعرة
                 </p>
                 <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '5px 0' }}>
                   {selectedPlan === 'maintain' ? 'لا يوجد تعديل' : selectedPlan === 'gain' ? 'زيادة من الكربوهيدرات' : 'خسارة من الكربوهيدرات'}
@@ -1570,7 +1722,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h4 style={{ color: '#f59e0b', marginBottom: '10px', fontSize: '1rem' }}>ملاحظات الخطة</h4>
                 <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '5px 0', lineHeight: '1.4' }}>
-                  {nutritionPlan.macrosDetail.notes}
+                  {nutritionPlan.macrosDetail?.notes || ''}
                 </p>
               </div>
             </div>
