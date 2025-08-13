@@ -1170,8 +1170,18 @@ const Calculator = dynamic(() => Promise.resolve(() => {
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>العمر:</label>
             <input
               type="number"
-              value={playerData.age}
-              onChange={(e) => setPlayerData({...playerData, age: parseInt(e.target.value) || 0})}
+              value={playerData.age || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '') {
+                  setPlayerData({...playerData, age: 0});
+                } else {
+                  const numValue = parseInt(value);
+                  if (!isNaN(numValue) && numValue >= 9 && numValue <= 65) {
+                    setPlayerData({...playerData, age: numValue});
+                  }
+                }
+              }}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -1182,6 +1192,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}
               min="9"
               max="65"
+              placeholder="9"
             />
           </div>
 
@@ -1208,8 +1219,18 @@ const Calculator = dynamic(() => Promise.resolve(() => {
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>الوزن (كجم):</label>
             <input
               type="number"
-              value={playerData.weight}
-              onChange={(e) => setPlayerData({...playerData, weight: parseFloat(e.target.value) || 0})}
+              value={playerData.weight || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '') {
+                  setPlayerData({...playerData, weight: 0});
+                } else {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue) && numValue >= 20 && numValue <= 200) {
+                    setPlayerData({...playerData, weight: numValue});
+                  }
+                }
+              }}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -1220,6 +1241,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}
               min="20"
               max="200"
+              placeholder="30"
             />
           </div>
 
@@ -1227,8 +1249,18 @@ const Calculator = dynamic(() => Promise.resolve(() => {
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>الطول (سم):</label>
             <input
               type="number"
-              value={playerData.height}
-              onChange={(e) => setPlayerData({...playerData, height: parseFloat(e.target.value) || 0})}
+              value={playerData.height || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '') {
+                  setPlayerData({...playerData, height: 0});
+                } else {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue) && numValue >= 100 && numValue <= 250) {
+                    setPlayerData({...playerData, height: numValue});
+                  }
+                }
+              }}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -1239,6 +1271,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}
               min="100"
               max="250"
+              placeholder="175"
             />
           </div>
 

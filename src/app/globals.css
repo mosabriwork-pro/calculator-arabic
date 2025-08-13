@@ -9,8 +9,10 @@ input[type="number"] {
   -webkit-appearance: auto !important;
   -moz-appearance: auto !important;
   appearance: auto !important;
+  text-align: center !important;
 }
 
+/* إصلاح الأسهم لجميع المتصفحات */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: auto !important;
@@ -23,6 +25,7 @@ input[type="number"]::-webkit-inner-spin-button {
   background-color: #f9fafb !important;
   border: 1px solid #d1d5db !important;
   border-radius: 4px !important;
+  cursor: pointer !important;
 }
 
 input[type="number"]::-moz-inner-spin-button,
@@ -37,6 +40,7 @@ input[type="number"]::-moz-outer-spin-button {
   background-color: #f9fafb !important;
   border: 1px solid #d1d5db !important;
   border-radius: 4px !important;
+  cursor: pointer !important;
 }
 
 /* تحسين مظهر الأسهم */
@@ -54,26 +58,55 @@ input[type="number"]::-moz-outer-spin-button:hover {
 
 /* تحسين مظهر الأسهم على الجوال */
 @media (max-width: 768px) {
+  input[type="number"] {
+    text-align: center !important;
+    font-size: 18px !important;
+  }
+  
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button {
-    height: 24px !important;
-    width: 24px !important;
+    height: 28px !important;
+    width: 28px !important;
     background-color: #f9fafb !important;
     border: 1px solid #d1d5db !important;
-    border-radius: 4px !important;
+    border-radius: 6px !important;
     display: block !important;
     opacity: 1 !important;
+    margin: 2px !important;
   }
   
   input[type="number"]::-moz-inner-spin-button,
   input[type="number"]::-moz-outer-spin-button {
-    height: 24px !important;
-    width: 24px !important;
+    height: 28px !important;
+    width: 28px !important;
     background-color: #f9fafb !important;
     border: 1px solid #d1d5db !important;
-    border-radius: 4px !important;
+    border-radius: 6px !important;
     display: block !important;
     opacity: 1 !important;
+    margin: 2px !important;
+  }
+  
+  /* تحسين مظهر الأسهم على الجوال - ألوان أكثر وضوحاً */
+  input[type="number"]::-webkit-outer-spin-button {
+    background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%) !important;
+    border: 2px solid #d1d5db !important;
+  }
+  
+  input[type="number"]::-webkit-inner-spin-button {
+    background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%) !important;
+    border: 2px solid #d1d5db !important;
+  }
+}
+
+/* إصلاح خاص للـ iOS */
+@supports (-webkit-touch-callout: none) {
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: auto !important;
+    appearance: auto !important;
+    opacity: 1 !important;
+    display: block !important;
   }
 }
 
