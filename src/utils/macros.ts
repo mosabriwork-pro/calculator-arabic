@@ -82,6 +82,15 @@ export interface MacroOutput {
   fat_g: MacroRange;
   carb_g: MacroRange;
   carbs_maintain: MacroRange; // قيمة الكربوهيدرات الأساسية (خطة المحافظة)
+  carbs_display: {
+    base_min: number;          // من المحافظة
+    base_max: number;          // من المحافظة
+    base_value: number;        // الرقم الوحيد المعروض (ثابت)
+    delta_g_min: number | null;  // null في المحافظة
+    delta_g_max: number | null;
+    note_text: string | null;    // "يزاد من الكربوهيدرات: 75–125 غ/يوم" أو "ينقص ..."
+    note_color: 'green' | 'red' | null;
+  };
   delta_display: {
     text_min: string | null;
     text_max: string | null;
@@ -224,6 +233,42 @@ export function computeMacros(input: MacroInput): MacroOutput {
   const carb_max_raw_maxCal = (finalCaloriesMax - (protein_g_min_raw * CALORIES_PER_GRAM.PROTEIN) - (fat_min_raw_maxCal * CALORIES_PER_GRAM.FAT)) / CALORIES_PER_GRAM.CARBS;
   const carb_min_raw_maxCal = (finalCaloriesMax - (protein_g_max_raw * CALORIES_PER_GRAM.PROTEIN) - (fat_max_raw_maxCal * CALORIES_PER_GRAM.FAT)) / CALORIES_PER_GRAM.CARBS;
   
+  // حساب الكربوهيدرات الأساسية (من خطة المحافظة فقط) - بدون تقريب مبكر
+  // بروتين الصيانة حسب العمر
+  const protein_maintain_min_raw = proteinRatios.maintain.min * weight_kg;
+  const protein_maintain_max_raw = proteinRatios.maintain.max * weight_kg;
+  
+  // دهون الصيانة: 25–35% من سعرات المحافظة
+  const fat_maintain_min_raw = (FAT_RATIOS.min * calories_maint) / CALORIES_PER_GRAM.FAT;
+  const fat_maintain_max_raw = (FAT_RATIOS.max * calories_maint) / CALORIES_PER_GRAM.FAT;
+  
+  // الكارب الأساسي (نطاق) = المتبقّي
+  const carbs_base_max_raw = (calories_maint - (protein_maintain_min_raw * CALORIES_PER_GRAM.PROTEIN) - (fat_maintain_min_raw * CALORIES_PER_GRAM.FAT)) / CALORIES_PER_GRAM.CARBS;
+  const carbs_base_min_raw = (calories_maint - (protein_maintain_max_raw * CALORIES_PER_GRAM.PROTEIN) - (fat_maintain_max_raw * CALORIES_PER_GRAM.FAT)) / CALORIES_PER_GRAM.CARBS;
+  
+  // قيمة العرض الأساسية = متوسط النطاق، ثم قرّب عند الإخراج فقط
+  const carbs_base_value = Math.round((carbs_base_min_raw + carbs_base_max_raw) / 2);
+  
+  // حساب دلتا الكربوهيدرات بالغرام (من دلتا السعرات)
+  let delta_g_min: number | null = null;
+  let delta_g_max: number | null = null;
+  let note_text: string | null = null;
+  let note_color: 'green' | 'red' | null = null;
+  
+  if (goal !== 'maintain') {
+    // تحويل دلتا السعرات إلى غرام كارب (1غ كارب = 4 ك.س)
+    delta_g_min = Math.round(deltaMin / CALORIES_PER_GRAM.CARBS);
+    delta_g_max = Math.round(deltaMax / CALORIES_PER_GRAM.CARBS);
+    
+    if (goal === 'bulk') {
+      note_text = `يزاد من الكربوهيدرات: ${delta_g_min}–${delta_g_max} غ/يوم`;
+      note_color = 'green';
+    } else { // cut
+      note_text = `ينقص من الكربوهيدرات: ${Math.abs(delta_g_max)}–${Math.abs(delta_g_min)} غ/يوم`;
+      note_color = 'red';
+    }
+  }
+  
   // التحقق من عدم وجود قيم سالبة للكربوهيدرات - على القيم الخام
   if (carb_min_raw_minCal < 0 || carb_min_raw_maxCal < 0 || carb_max_raw_minCal < 0 || carb_max_raw_maxCal < 0) {
     throw new Error('السعرات غير كافية لتغطية الحد الأدنى من البروتين والدهون.');
@@ -270,6 +315,15 @@ export function computeMacros(input: MacroInput): MacroOutput {
       max: Math.round(Math.max(carb_max_raw_minCal, carb_max_raw_maxCal))
     },
     carbs_maintain: { min: Math.round(carb_min_raw_minCal), max: Math.round(carb_max_raw_minCal) }, // قيمة الكربوهيدرات الأساسية (خطة المحافظة)
+    carbs_display: {
+      base_min: Math.round(carbs_base_min_raw),
+      base_max: Math.round(carbs_base_max_raw),
+      base_value: carbs_base_value,
+      delta_g_min: delta_g_min,
+      delta_g_max: delta_g_max,
+      note_text: note_text,
+      note_color: note_color
+    },
     delta_display: deltaDisplay,
     notes,
     checks: {

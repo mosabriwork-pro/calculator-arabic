@@ -377,6 +377,16 @@ describe('Macros Calculator Tests', () => {
         protein_g: { min: 100, max: 120 },
         fat_g: { min: 60, max: 80 },
         carb_g: { min: 200, max: 250 },
+        carbs_maintain: { min: 200, max: 250 },
+        carbs_display: {
+          base_min: 200,
+          base_max: 250,
+          base_value: 225,
+          delta_g_min: null,
+          delta_g_max: null,
+          note_text: null,
+          note_color: null
+        },
         delta_display: {
           text_min: null,
           text_max: null,
@@ -412,6 +422,16 @@ describe('Macros Calculator Tests', () => {
         protein_g: { min: 140, max: 140 },
         fat_g: { min: 60, max: 80 },
         carb_g: { min: 200, max: 250 },
+        carbs_maintain: { min: 200, max: 250 },
+        carbs_display: {
+          base_min: 200,
+          base_max: 250,
+          base_value: 225,
+          delta_g_min: 75,
+          delta_g_max: 125,
+          note_text: 'يزاد من الكربوهيدرات: 75–125 غ/يوم',
+          note_color: 'green' as const
+        },
         delta_display: {
           text_min: '+300',
           text_max: '+500',
@@ -444,6 +464,16 @@ describe('Macros Calculator Tests', () => {
         protein_g: { min: 100, max: 120 },
         fat_g: { min: 60, max: 80 },
         carb_g: { min: 200, max: 250 },
+        carbs_maintain: { min: 200, max: 250 },
+        carbs_display: {
+          base_min: 200,
+          base_max: 250,
+          base_value: 225,
+          delta_g_min: null,
+          delta_g_max: null,
+          note_text: null,
+          note_color: null
+        },
         delta_display: {
           text_min: null,
           text_max: null,
@@ -523,6 +553,17 @@ describe('Macros Calculator Tests', () => {
       });
       
       expect(result.notes).toContain('زيادة الوزن');
+    });
+  });
+
+  // اختبار أن قيمة الكربوهيدرات الأساسية ثابتة عبر جميع الخطط
+  test('carbs base value should be invariant across plans', () => {
+    const person = { age_years: 22, weight_kg: 70, total_calories: 2500 };
+    const base = computeMacros({ ...person, goal: 'maintain' }).carbs_display.base_value;
+    
+    ['maintain', 'cut', 'bulk'].forEach(goal => {
+      const result = computeMacros({ ...person, goal: goal as any });
+      expect(result.carbs_display.base_value).toBe(base);
     });
   });
 });
