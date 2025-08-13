@@ -1086,38 +1086,46 @@ const Calculator = dynamic(() => Promise.resolve(() => {
   const exportToPrintPage = async () => {
     setIsExporting(true)
     try {
-      // تجهيز بيانات التقرير
+      // تجهيز بيانات التقرير بالشكل الصحيح
       const reportData = {
         name: playerData.name,
         age: playerData.age,
+        gender: playerData.gender,
         height: playerData.height,
         currentWeight: playerData.weight,
         position: playerData.position,
         activityLevel: playerData.activityLevel,
-        country: 'السعودية', // يمكن إضافته لاحقاً
-        calories: nutritionPlan.calories || 0,
-        protein: nutritionPlan.protein || 0,
-        carbs: nutritionPlan.carbs || 0,
-        fat: nutritionPlan.fat || 0,
-        water: nutritionPlan.water || 0,
-        idealWeight: nutritionPlan.idealWeight?.min || 0,
-        weightGain: {
-          calories: Math.round((nutritionPlan.calories || 0) * 1.1),
-          protein: Math.round((nutritionPlan.protein || 0) * 1.1),
-          carbs: Math.round((nutritionPlan.carbs || 0) * 1.1),
-          fat: Math.round((nutritionPlan.fat || 0) * 1.1)
-        },
-        maintenance: {
-          calories: nutritionPlan.calories || 0,
-          protein: nutritionPlan.protein || 0,
-          carbs: nutritionPlan.carbs || 0,
-          fat: nutritionPlan.fat || 0
-        },
-        weightLoss: {
-          calories: Math.round((nutritionPlan.calories || 0) * 0.9),
-          protein: Math.round((nutritionPlan.protein || 0) * 1.1),
-          carbs: Math.round((nutritionPlan.carbs || 0) * 0.8),
-          fat: Math.round((nutritionPlan.fat || 0) * 0.9)
+        country: 'السعودية',
+        goal: selectedPlan,
+        // النتائج الأساسية
+        calories: nutritionPlan.macrosDetail?.calories || { maintain: 0, final_min: 0, final_max: 0, delta_min: 0, delta_max: 0 },
+        protein_g: nutritionPlan.macrosDetail?.protein || { min: 0, max: 0 },
+        fat_g: nutritionPlan.macrosDetail?.fat || { min: 0, max: 0 },
+        carb_g: nutritionPlan.macrosDetail?.carbs || { min: 0, max: 0 },
+        carbs_display: nutritionPlan.macrosDetail?.carbs_display || { base_value: 0, delta_g_min: null, delta_g_max: null, note_text: null, note_color: null },
+        water_l: nutritionPlan.water || 0,
+        ideal_weight_kg: nutritionPlan.idealWeight || { min: 0, max: 0 },
+        notes: nutritionPlan.macrosDetail?.notes || '',
+        // الخطط الغذائية
+        plans: {
+          maintain: {
+            cal: nutritionPlan.macrosDetail?.calories?.maintain || 0,
+            protein_g: nutritionPlan.macrosDetail?.protein || { min: 0, max: 0 },
+            carb_g: nutritionPlan.macrosDetail?.carbs || { min: 0, max: 0 },
+            fat_g: nutritionPlan.macrosDetail?.fat || { min: 0, max: 0 }
+          },
+          bulk: {
+            cal: nutritionPlan.macrosDetail?.calories?.final_max || 0,
+            protein_g: nutritionPlan.macrosDetail?.protein || { min: 0, max: 0 },
+            carb_g: nutritionPlan.macrosDetail?.carbs || { min: 0, max: 0 },
+            fat_g: nutritionPlan.macrosDetail?.fat || { min: 0, max: 0 }
+          },
+          cut: {
+            cal: nutritionPlan.macrosDetail?.calories?.final_min || 0,
+            protein_g: nutritionPlan.macrosDetail?.protein || { min: 0, max: 0 },
+            carb_g: nutritionPlan.macrosDetail?.carbs || { min: 0, max: 0 },
+            fat_g: nutritionPlan.macrosDetail?.fat || { min: 0, max: 0 }
+          }
         }
       }
 

@@ -6,34 +6,66 @@ import { useEffect, useState, Suspense } from 'react';
 interface NutritionData {
   name: string;
   age: number;
+  gender: string;
   height: number;
   currentWeight: number;
   position: string;
   activityLevel: string;
   country: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  water: number;
-  idealWeight: number;
-  weightGain: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
+  goal: string;
+  // النتائج الأساسية
+  calories: {
+    maintain: number;
+    final_min: number;
+    final_max: number;
+    delta_min: number;
+    delta_max: number;
   };
-  maintenance: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
+  protein_g: {
+    min: number;
+    max: number;
   };
-  weightLoss: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
+  fat_g: {
+    min: number;
+    max: number;
+  };
+  carb_g: {
+    min: number;
+    max: number;
+  };
+  carbs_display: {
+    base_value: number;
+    delta_g_min: number | null;
+    delta_g_max: number | null;
+    note_text: string | null;
+    note_color: string | null;
+  };
+  water_l: number;
+  ideal_weight_kg: {
+    min: number;
+    max: number;
+  };
+  notes: string;
+  // الخطط الغذائية
+  plans: {
+    maintain: {
+      cal: number;
+      protein_g: number | { min: number; max: number };
+      carb_g: number | { min: number; max: number };
+      fat_g: number | { min: number; max: number };
+    };
+    bulk: {
+      cal: number;
+      protein_g: number | { min: number; max: number };
+      carb_g: number | { min: number; max: number };
+      fat_g: number | { min: number; max: number };
+    };
+    cut: {
+      cal: number;
+      protein_g: number | { min: number; max: number };
+      carb_g: number | { min: number; max: number };
+      fat_g: number | { min: number; max: number };
+    };
   };
 }
 
@@ -169,7 +201,7 @@ function PrintReportContent() {
       </div>
 
       {/* Page 2: Player Information */}
-      <div className="page">
+      <div className="page page-2">
         <div className="page-logo">
           <img src="/logoforweb.png" alt="موصبري" />
         </div>
@@ -188,6 +220,10 @@ function PrintReportContent() {
             <span className="value">{data.age || 'لم يتم إدخال العمر'} سنة</span>
           </div>
           <div className="info-item">
+            <span className="label">الجنس:</span>
+            <span className="value">{data.gender || 'لم يتم تحديد الجنس'}</span>
+          </div>
+          <div className="info-item">
             <span className="label">الطول:</span>
             <span className="value">{data.height || 'لم يتم إدخال الطول'} سم</span>
           </div>
@@ -203,6 +239,14 @@ function PrintReportContent() {
             <span className="label">مستوى النشاط:</span>
             <span className="value">{data.activityLevel || 'لم يتم إدخال مستوى النشاط'}</span>
           </div>
+          <div className="info-item">
+            <span className="label">الخطة:</span>
+            <span className="value">
+              {data.goal === 'maintain' ? 'المحافظة على الوزن' :
+               data.goal === 'gain' ? 'زيادة الوزن' :
+               data.goal === 'lose' ? 'خسارة الوزن' : 'لم يتم تحديد الخطة'}
+            </span>
+          </div>
         </div>
         <div className="report-footer">
           <p>تم إنشاء هذا التقرير بواسطة نظام موصبري للتغذية الرياضية</p>
@@ -211,7 +255,7 @@ function PrintReportContent() {
       </div>
 
       {/* Page 3: Basic Results */}
-      <div className="page">
+      <div className="page page-3">
         <div className="page-logo">
           <img src="/logoforweb.png" alt="موصبري" />
         </div>
@@ -224,32 +268,50 @@ function PrintReportContent() {
           <div className="result-card">
             <div className="card-icon">🔥</div>
             <h3>السعرات الحرارية</h3>
-            <div className="value">{data.calories || 'غير محسوب'} سعرة</div>
+            <div className="value">{data.calories?.final_min || 'غير محسوب'} سعرة</div>
+            {data.calories?.delta_min !== 0 && (
+              <div className="delta-note" style={{ 
+                color: data.calories?.delta_min > 0 ? '#22c55e' : '#dc2626',
+                fontSize: '0.8rem',
+                marginTop: '5px'
+              }}>
+                {data.calories?.delta_min > 0 ? '+' : ''}{data.calories?.delta_min} من الكربوهيدرات
+              </div>
+            )}
           </div>
           <div className="result-card">
             <div className="card-icon">💪</div>
             <h3>البروتين</h3>
-            <div className="value">{data.protein || 'غير محسوب'} جرام</div>
+            <div className="value">{data.protein_g?.min}-{data.protein_g?.max} غ</div>
           </div>
           <div className="result-card">
             <div className="card-icon">🌾</div>
             <h3>الكربوهيدرات</h3>
-            <div className="value">{data.carbs || 'غير محسوب'} جرام</div>
+            <div className="value">{data.carbs_display?.base_value || data.carb_g?.min}-{data.carb_g?.max} غ</div>
+            {data.carbs_display?.note_text && (
+              <div className="delta-note" style={{ 
+                color: data.carbs_display?.note_color || '#22c55e',
+                fontSize: '0.8rem',
+                marginTop: '5px'
+              }}>
+                {data.carbs_display.note_text}
+              </div>
+            )}
           </div>
           <div className="result-card">
             <div className="card-icon">🥑</div>
             <h3>الدهون</h3>
-            <div className="value">{data.fat || 'غير محسوب'} جرام</div>
+            <div className="value">{data.fat_g?.min}-{data.fat_g?.max} غ</div>
           </div>
           <div className="result-card">
             <div className="card-icon">💧</div>
             <h3>الماء</h3>
-            <div className="value">{data.water || 'غير محسوب'} لتر</div>
+            <div className="value">{data.water_l || 'غير محسوب'} لتر</div>
           </div>
           <div className="result-card">
             <div className="card-icon">⚖️</div>
             <h3>الوزن المثالي</h3>
-            <div className="value">{data.idealWeight || 'غير محسوب'} كجم</div>
+            <div className="value">{data.ideal_weight_kg?.min}-{data.ideal_weight_kg?.max} كجم</div>
           </div>
         </div>
         <div className="report-footer">
@@ -259,7 +321,7 @@ function PrintReportContent() {
       </div>
 
       {/* Page 4: Weight & Nutrition Analysis */}
-      <div className="page">
+      <div className="page page-4">
         <div className="page-logo">
           <img src="/logoforweb.png" alt="موصبري" />
         </div>
@@ -277,13 +339,13 @@ function PrintReportContent() {
             </div>
             <div className="analysis-item">
               <span className="label">الوزن المثالي:</span>
-              <span className="value">{data.idealWeight || 'غير محدد'} كجم</span>
+              <span className="value">{data.ideal_weight_kg?.min}-{data.ideal_weight_kg?.max} كجم</span>
             </div>
             <div className="analysis-item">
               <span className="label">الفرق المطلوب:</span>
               <span className="value">
-                {data.currentWeight && data.idealWeight 
-                  ? `${Math.abs(data.currentWeight - data.idealWeight).toFixed(1)} كجم`
+                {data.currentWeight && data.ideal_weight_kg?.min 
+                  ? `${Math.abs(data.currentWeight - data.ideal_weight_kg.min).toFixed(1)} كجم`
                   : 'غير محدد'}
               </span>
             </div>
@@ -294,23 +356,23 @@ function PrintReportContent() {
           <div className="nutrition-needs">
             <div className="need-item">
               <span className="label">البروتين اليومي:</span>
-              <span className="value">{data.protein || 'غير محسوب'} جرام</span>
+              <span className="value">{data.protein_g?.min}-{data.protein_g?.max} غ</span>
             </div>
             <div className="need-item">
               <span className="label">الكربوهيدرات اليومية:</span>
-              <span className="value">{data.carbs || 'غير محسوب'} جرام</span>
+              <span className="value">{data.carb_g?.min}-{data.carb_g?.max} غ</span>
             </div>
             <div className="need-item">
               <span className="label">الدهون اليومية:</span>
-              <span className="value">{data.fat || 'غير محسوب'} جرام</span>
+              <span className="value">{data.fat_g?.min}-{data.fat_g?.max} غ</span>
             </div>
             <div className="need-item">
               <span className="label">الماء اليومي:</span>
-              <span className="value">{data.water || 'غير محسوب'} لتر</span>
+              <span className="value">{data.water_l || 'غير محسوب'} لتر</span>
             </div>
             <div className="need-item">
               <span className="label">إجمالي السعرات:</span>
-              <span className="value">{data.calories || 'غير محسوب'} سعرة</span>
+              <span className="value">{data.calories?.final_min || 'غير محسوب'} سعرة</span>
             </div>
           </div>
         </div>
@@ -321,9 +383,9 @@ function PrintReportContent() {
       </div>
 
       {/* Page 5: Three Nutrition Plans */}
-      <div className="page">
+      <div className="page page-5">
         <div className="page-logo">
-          <img src="/logoforweb.png" alt="موصبري" />
+          <img src="/logoforweb.png" alt="موسبري" />
         </div>
         <div className="page-header">
           <div className="header-icon">📋</div>
@@ -339,19 +401,37 @@ function PrintReportContent() {
             <div className="plan-details">
               <div className="detail-item">
                 <span className="label">السعرات:</span>
-                <span className="value">{data.weightGain?.calories || 'غير محسوب'}</span>
+                <span className="value">{typeof data.plans?.bulk?.cal === 'number' ? data.plans.bulk.cal : 'غير محسوب'}</span>
               </div>
               <div className="detail-item">
                 <span className="label">البروتين:</span>
-                <span className="value">{data.weightGain?.protein || 'غير محسوب'} جرام</span>
+                <span className="value">
+                  {typeof data.plans?.bulk?.protein_g === 'number' 
+                    ? `${data.plans.bulk.protein_g} غ`
+                    : typeof data.plans?.bulk?.protein_g === 'object'
+                    ? `${data.plans.bulk.protein_g.min}-${data.plans.bulk.protein_g.max} غ`
+                    : 'غير محسوب'}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="label">الكربوهيدرات:</span>
-                <span className="value">{data.weightGain?.carbs || 'غير محسوب'} جرام</span>
+                <span className="value">
+                  {typeof data.plans?.bulk?.carb_g === 'number' 
+                    ? `${data.plans.bulk.carb_g} غ`
+                    : typeof data.plans?.bulk?.carb_g === 'object'
+                    ? `${data.plans.bulk.carb_g.min}-${data.plans.bulk.carb_g.max} غ`
+                    : 'غير محسوب'}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="label">الدهون:</span>
-                <span className="value">{data.weightGain?.fat || 'غير محسوب'} جرام</span>
+                <span className="value">
+                  {typeof data.plans?.bulk?.fat_g === 'number' 
+                    ? `${data.plans.bulk.fat_g} غ`
+                    : typeof data.plans?.bulk?.fat_g === 'object'
+                    ? `${data.plans.bulk.fat_g.min}-${data.plans.bulk.fat_g.max} غ`
+                    : 'غير محسوب'}
+                </span>
               </div>
             </div>
           </div>
@@ -364,19 +444,37 @@ function PrintReportContent() {
             <div className="plan-details">
               <div className="detail-item">
                 <span className="label">السعرات:</span>
-                <span className="value">{data.maintenance?.calories || 'غير محسوب'}</span>
+                <span className="value">{typeof data.plans?.maintain?.cal === 'number' ? data.plans.maintain.cal : 'غير محسوب'}</span>
               </div>
               <div className="detail-item">
                 <span className="label">البروتين:</span>
-                <span className="value">{data.maintenance?.protein || 'غير محسوب'} جرام</span>
+                <span className="value">
+                  {typeof data.plans?.maintain?.protein_g === 'number' 
+                    ? `${data.plans.maintain.protein_g} غ`
+                    : typeof data.plans?.maintain?.protein_g === 'object'
+                    ? `${data.plans.maintain.protein_g.min}-${data.plans.maintain.protein_g.max} غ`
+                    : 'غير محسوب'}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="label">الكربوهيدرات:</span>
-                <span className="value">{data.maintenance?.carbs || 'غير محسوب'} جرام</span>
+                <span className="value">
+                  {typeof data.plans?.maintain?.carb_g === 'number' 
+                    ? `${data.plans.maintain.carb_g} غ`
+                    : typeof data.plans?.maintain?.carb_g === 'object'
+                    ? `${data.plans.maintain.carb_g.min}-${data.plans.maintain.carb_g.max} غ`
+                    : 'غير محسوب'}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="label">الدهون:</span>
-                <span className="value">{data.maintenance?.fat || 'غير محسوب'} جرام</span>
+                <span className="value">
+                  {typeof data.plans?.maintain?.fat_g === 'number' 
+                    ? `${data.plans.maintain.fat_g} غ`
+                    : typeof data.plans?.maintain?.fat_g === 'object'
+                    ? `${data.plans.maintain.fat_g.min}-${data.plans.maintain.fat_g.max} غ`
+                    : 'غير محسوب'}
+                </span>
               </div>
             </div>
           </div>
@@ -389,19 +487,37 @@ function PrintReportContent() {
             <div className="plan-details">
               <div className="detail-item">
                 <span className="label">السعرات:</span>
-                <span className="value">{data.weightLoss?.calories || 'غير محسوب'}</span>
+                <span className="value">{typeof data.plans?.cut?.cal === 'number' ? data.plans.cut.cal : 'غير محسوب'}</span>
               </div>
               <div className="detail-item">
                 <span className="label">البروتين:</span>
-                <span className="value">{data.weightLoss?.protein || 'غير محسوب'} جرام</span>
+                <span className="value">
+                  {typeof data.plans?.cut?.protein_g === 'number' 
+                    ? `${data.plans.cut.protein_g} غ`
+                    : typeof data.plans?.cut?.protein_g === 'object'
+                    ? `${data.plans.cut.protein_g.min}-${data.plans.cut.protein_g.max} غ`
+                    : 'غير محسوب'}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="label">الكربوهيدرات:</span>
-                <span className="value">{data.weightLoss?.carbs || 'غير محسوب'} جرام</span>
+                <span className="value">
+                  {typeof data.plans?.cut?.carb_g === 'number' 
+                    ? `${data.plans.cut.carb_g} غ`
+                    : typeof data.plans?.cut?.carb_g === 'object'
+                    ? `${data.plans.cut.carb_g.min}-${data.plans.cut.carb_g.max} غ`
+                    : 'غير محسوب'}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="label">الدهون:</span>
-                <span className="value">{data.weightLoss?.fat || 'غير محسوب'} جرام</span>
+                <span className="value">
+                  {typeof data.plans?.cut?.fat_g === 'number' 
+                    ? `${data.plans.cut.fat_g} غ`
+                    : typeof data.plans?.cut?.fat_g === 'object'
+                    ? `${data.plans.cut.fat_g.min}-${data.plans.cut.fat_g.max} غ`
+                    : 'غير محسوب'}
+                </span>
               </div>
             </div>
           </div>
@@ -427,7 +543,7 @@ function PrintReportContent() {
             <div className="tip-icon">💧</div>
             <div className="tip-content">
               <h3>شرب الماء</h3>
-              <p>احرص على شرب {data.water || '2-3'} لتر من الماء يومياً، خاصة قبل وأثناء وبعد التدريبات.</p>
+              <p>احرص على شرب {data.water_l || '2-3'} لتر من الماء يومياً، خاصة قبل وأثناء وبعد التدريبات.</p>
             </div>
           </div>
           <div className="tip-item">
@@ -1168,56 +1284,84 @@ function PrintReportContent() {
 
         /* Print Styles */
         @media print {
-          body {
+          @page { 
+            size: A4; 
+            margin: 1.5cm; 
+          }
+
+          .page {
+            box-sizing: border-box;
+            min-height: calc(297mm - 3cm); /* ارتفاع المحتوى داخل الهامش */
+            page-break-after: always;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            padding: 15mm;
             margin: 0;
-            padding: 0;
+          }
+          
+          .page:last-child { 
+            page-break-after: auto; 
           }
 
-          .print-report {
-            width: 100%;
-            height: 100%;
+          /* صفحة الخطط الغذائية الثلاث (رقم 5) */
+          .page.page-5 .plans-grid {
+            display: grid;
+            grid-template-rows: repeat(3, 1fr); /* كل بطاقة تأخذ ثلث الارتفاع */
+            gap: 8mm;
+            height: calc(297mm - 8cm); /* ارتفاع الصفحة ناقص الهوامش والعناوين */
+          }
+          
+          .page.page-5 .plan-card {
+            break-inside: avoid;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            /* اضبط الحشو ليمنع تمدد الصفحة */
+            padding: 6mm 8mm;
+            min-height: 0;
+            overflow: hidden;
+          }
+          
+          /* منع أي تجاوز رأسي يسبب صفحة أطول */
+          .page.page-5 { 
+            overflow: hidden; 
+            height: 297mm;
           }
 
-                     .page {
-             page-break-after: always;
-             page-break-inside: avoid;
-             margin: 0;
-             padding: 15mm;
-             box-shadow: none;
-             border: none;
-           }
-
-           .cover-page {
-             padding: 40mm !important;
-           }
-
-          .page:last-child {
-            page-break-after: auto;
-          }
-
-          .page-logo {
-            top: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-          }
-
-
-
-          /* Ensure no background colors in print */
-          .result-card, .plan-card, .tip-item, .analysis-item, .need-item {
-            background: white !important;
-            border: 1px solid #ccc !important;
-          }
-
-          /* Hide any non-essential elements */
-          .no-print {
-            display: none !important;
-          }
-
-          /* Hide print button when printing */
+          /* إخفاء أزرار الطباعة */
           .print-button-container {
             display: none !important;
+          }
+
+          /* إزالة الظلال والخلفيات */
+          .page {
+            box-shadow: none !important;
+            background: white !important;
+            border: none !important;
+          }
+
+          /* ضبط الخطوط للطباعة */
+          body {
+            font-size: 12pt;
+            line-height: 1.4;
+          }
+
+          /* منع انقسام العناصر */
+          .result-card, .plan-card, .tip-item, .analysis-item, .need-item {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          
+          /* ضبط العناوين للطباعة */
+          h1, h2, h3 {
+            page-break-after: avoid;
+            break-after: avoid;
+          }
+          
+          /* ضبط الجداول للطباعة */
+          .info-grid, .results-grid, .plans-grid {
+            page-break-inside: avoid;
+            break-inside: avoid;
           }
         }
 
@@ -1266,6 +1410,20 @@ function PrintReportContent() {
             margin-bottom: 20px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-radius: 8px;
+          }
+          
+          /* تنسيق صفحة الخطط على الشاشة */
+          .page.page-5 .plans-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+          
+          .page.page-5 .plan-card {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
           }
         }
       `}</style>
