@@ -4,6 +4,59 @@
 @tailwind components;
 @tailwind utilities;
 
+/* إصلاح الأسهم في حقول الأرقام على الجوال */
+input[type="number"] {
+  -webkit-appearance: auto !important;
+  -moz-appearance: auto !important;
+  appearance: auto !important;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: auto !important;
+  margin: 0;
+  opacity: 1 !important;
+  height: 20px !important;
+  width: 20px !important;
+}
+
+input[type="number"]::-moz-inner-spin-button,
+input[type="number"]::-moz-outer-spin-button {
+  -moz-appearance: auto !important;
+  margin: 0;
+  opacity: 1 !important;
+  height: 20px !important;
+  width: 20px !important;
+}
+
+/* تحسين مظهر الأسهم */
+input[type="number"]::-webkit-outer-spin-button:hover,
+input[type="number"]::-webkit-inner-spin-button:hover {
+  background-color: #f3f4f6;
+  border-radius: 4px;
+}
+
+/* تحسين مظهر الأسهم على الجوال */
+@media (max-width: 768px) {
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    height: 24px !important;
+    width: 24px !important;
+    background-color: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+  }
+  
+  input[type="number"]::-moz-inner-spin-button,
+  input[type="number"]::-moz-outer-spin-button {
+    height: 24px !important;
+    width: 24px !important;
+    background-color: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+  }
+}
+
 /* Custom animations for login page */
 @keyframes spin {
   0% { transform: rotate(0deg); }
