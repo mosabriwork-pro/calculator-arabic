@@ -13,6 +13,7 @@ interface PlayerData {
   age: number
   weight: number
   height: number
+  gender: 'ذكر' | 'أنثى'
   position: string
   activityLevel: string
 }
@@ -70,6 +71,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
     age: 9,
     weight: 30,
     height: 175,
+    gender: 'ذكر',
     position: 'مهاجم',
     activityLevel: 'نشاط متوسط (3-4 أيام تمرين اسبوعيا)'
   })
@@ -100,6 +102,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               age: typeof parsed.age === 'number' && parsed.age >= 9 && parsed.age <= 65 ? parsed.age : 9,
               weight: typeof parsed.weight === 'number' && parsed.weight >= 20 && parsed.weight <= 200 ? parsed.weight : 30,
               height: typeof parsed.height === 'number' && parsed.height >= 100 && parsed.height <= 250 ? parsed.height : 175,
+              gender: parsed.gender === 'أنثى' ? 'أنثى' : 'ذكر',
               position: parsed.position || 'مهاجم',
               activityLevel: parsed.activityLevel || 'نشاط متوسط (3-4 أيام تمرين اسبوعيا)'
             }))
@@ -170,6 +173,10 @@ const Calculator = dynamic(() => Promise.resolve(() => {
       errors.push('الطول يجب أن يكون بين 100 و 250 سم')
     }
     
+    if (!playerData.gender || (playerData.gender !== 'ذكر' && playerData.gender !== 'أنثى')) {
+      errors.push('يرجى اختيار الجنس')
+    }
+    
     setValidationErrors(errors)
     return errors.length === 0
   }
@@ -208,13 +215,21 @@ const Calculator = dynamic(() => Promise.resolve(() => {
 
   // Calculate nutrition plan
   const nutritionPlan = useMemo(() => {
-    // Calculate BMR
-    const bmr = 10 * playerData.weight + 6.25 * playerData.height - 5 * playerData.age + 5
+    // Import the correct calculation functions
+    const { calculateBMR, calculateTDEE } = require('../../utils/calories')
     
-    // Activity multipliers
+    // Calculate BMR using the correct formula
+    const bmr = calculateBMR({
+      gender: playerData.gender,
+      weightKg: playerData.weight,
+      heightCm: playerData.height,
+      ageYears: playerData.age
+    })
+    
+    // Activity multipliers (using the correct values from our utils)
     const activityMultipliers = {
       'كسول (بدون تمرين)': 1.2,
-      'نشاط خفيف (1-2 يوم تمرين اسبوعيا)': 1.375,
+      'نشاط خفيف (1-2 يوم تمرين اسبوعيا)': 1.376,
       'نشاط متوسط (3-4 أيام تمرين اسبوعيا)': 1.55,
       'نشاط عالي (5-6 أيام تمرين اسبوعيا)': 1.725,
       'نشاط مكثف (تمرين يومي + نشاط بدني)': 1.9
@@ -325,12 +340,19 @@ const Calculator = dynamic(() => Promise.resolve(() => {
       const hijriDate = currentDate.toLocaleDateString('ar-SA-u-ca-islamic')
       const time = currentDate.toLocaleTimeString('ar-SA', { hour12: true })
       
-    // Calculate all nutrition plans
-    const bmr = 10 * playerData.weight + 6.25 * playerData.height - 5 * playerData.age + 5
+    // Calculate all nutrition plans using correct formulas
+    const { calculateBMR, calculateTDEE } = require('../../utils/calories')
+    
+    const bmr = calculateBMR({
+      gender: playerData.gender,
+      weightKg: playerData.weight,
+      heightCm: playerData.height,
+      ageYears: playerData.age
+    })
     
     const activityMultipliers = {
       'كسول (بدون تمرين)': 1.2,
-      'نشاط خفيف (1-2 يوم تمرين اسبوعيا)': 1.375,
+      'نشاط خفيف (1-2 يوم تمرين اسبوعيا)': 1.376,
       'نشاط متوسط (3-4 أيام تمرين اسبوعيا)': 1.55,
       'نشاط عالي (5-6 أيام تمرين اسبوعيا)': 1.725,
       'نشاط مكثف (تمرين يومي + نشاط بدني)': 1.9
@@ -680,7 +702,11 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                   <div class="value">${playerData.weight || '<span class="missing-data">لم يتم إدخال الوزن</span>'} كجم</div>
                 </div>
                 <div class="info-item">
-                  <h4>المركز</h4>
+                  <h4>الجنس</h4>
+                  <div class="value">${playerData.gender || '<span class="missing-data">لم يتم اختيار الجنس</span>'}</div>
+                </div>
+                <div class="info-item">
+                  <div class="label">المركز</div>
                   <div class="value">${playerData.position || '<span class="missing-data">لم يتم اختيار المركز</span>'}</div>
                 </div>
                 <div class="info-item">
@@ -1140,6 +1166,25 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               min="9"
               max="65"
             />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}>الجنس:</label>
+            <select
+              value={playerData.gender || 'ذكر'}
+              onChange={(e) => setPlayerData({...playerData, gender: e.target.value as 'ذكر' | 'أنثى'})}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '2px solid #ddd',
+                fontSize: '16px',
+                boxSizing: 'border-box'
+              }}
+            >
+              <option value="ذكر">ذكر</option>
+              <option value="أنثى">أنثى</option>
+            </select>
           </div>
 
           <div>

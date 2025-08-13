@@ -7,7 +7,6 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^16.18.126",
     "@types/nodemailer": "^6.4.17",
@@ -38,7 +37,8 @@
     "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p $PORT",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest"
   },
   "eslintConfig": {
     "extends": [
@@ -58,7 +58,10 @@
     ]
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/pdfmake": "^0.2.11",
-    "eslint": "^9.32.0"
+    "eslint": "^9.32.0",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.1"
   }
 }
