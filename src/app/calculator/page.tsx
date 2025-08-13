@@ -1397,7 +1397,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}>
                 <h3 style={{ color: '#3b82f6', marginBottom: '10px', fontSize: '0.9rem' }}>البروتين</h3>
-                                <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
+                <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
                   {nutritionPlan.proteinRange.min}-{nutritionPlan.proteinRange.max} جرام
                 </p>
                 {selectedPlan !== 'maintain' && (
