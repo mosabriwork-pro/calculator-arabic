@@ -281,7 +281,8 @@ const Calculator = dynamic(() => Promise.resolve(() => {
         fat: macrosResult.fat_g,
         carbs: macrosResult.carb_g,
         delta_display: macrosResult.delta_display,
-        notes: macrosResult.notes
+        notes: macrosResult.notes,
+        carbs_maintain: macrosResult.carb_g
       },
       // Add ranges for display
       proteinRange: macrosResult.protein_g,
@@ -1421,16 +1422,16 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h3 style={{ color: '#f59e0b', marginBottom: '10px', fontSize: '0.9rem' }}>الكربوهيدرات</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.carbsRange.min}-{nutritionPlan.carbsRange.max} جرام
+                  {nutritionPlan.macrosDetail.carbs_maintain.min}-{nutritionPlan.macrosDetail.carbs_maintain.max} جرام
                 </p>
                 {selectedPlan !== 'maintain' && (
                   <p style={{
                     fontSize: '0.8rem',
                     margin: '5px 0 0 0',
-                    color: '#f59e0b',
+                    color: selectedPlan === 'gain' ? '#22c55e' : '#ef4444',
                     fontWeight: 'bold'
                   }}>
-                    {selectedPlan === 'gain' ? '+' : '-'}{Math.abs(nutritionPlan.carbsRange.max - nutritionPlan.carbsRange.min)} من الكربوهيدرات
+                    {selectedPlan === 'gain' ? '+' : '-'}{Math.abs(nutritionPlan.caloriesAdjustment)} من الكربوهيدرات
                   </p>
                 )}
               </div>

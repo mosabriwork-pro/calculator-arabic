@@ -81,6 +81,7 @@ export interface MacroOutput {
   protein_g: MacroRange;
   fat_g: MacroRange;
   carb_g: MacroRange;
+  carbs_maintain: MacroRange; // قيمة الكربوهيدرات الأساسية (خطة المحافظة)
   delta_display: {
     text_min: string | null;
     text_max: string | null;
@@ -268,6 +269,7 @@ export function computeMacros(input: MacroInput): MacroOutput {
       min: Math.round(Math.min(carb_min_raw_minCal, carb_min_raw_maxCal)),
       max: Math.round(Math.max(carb_max_raw_minCal, carb_max_raw_maxCal))
     },
+    carbs_maintain: { min: Math.round(carb_min_raw_minCal), max: Math.round(carb_max_raw_minCal) }, // قيمة الكربوهيدرات الأساسية (خطة المحافظة)
     delta_display: deltaDisplay,
     notes,
     checks: {
