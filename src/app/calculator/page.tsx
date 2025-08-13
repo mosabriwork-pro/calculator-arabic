@@ -1423,7 +1423,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h3 style={{ color: '#f59e0b', marginBottom: '10px', fontSize: '0.9rem' }}>الكربوهيدرات</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.macrosDetail.carbs_display.base_value} غ
+                  {nutritionPlan.macrosDetail.carbs_display.base_min}-{nutritionPlan.macrosDetail.carbs_display.base_max} غ
                 </p>
                 {nutritionPlan.macrosDetail.carbs_display.note_text && (
                   <p style={{
