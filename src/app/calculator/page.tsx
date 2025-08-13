@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
+import ErrorBoundary from '../../components/ErrorBoundary'
 
 // Dynamically import Chart.js components
 const Pie = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Pie })), { ssr: false })
@@ -213,9 +214,10 @@ const Calculator = dynamic(() => Promise.resolve(() => {
 
   // Calculate nutrition plan using the correct units
   const nutritionPlan = useMemo(() => {
-    // Import the correct calculation functions
-    const { calculateBMR, calculateTDEE } = require('../../utils/calories')
-    const { computeMacros } = require('../../utils/macros')
+    try {
+      // Import the correct calculation functions
+      const { calculateBMR, calculateTDEE } = require('../../utils/calories')
+      const { computeMacros } = require('../../utils/macros')
     
     // Calculate BMR using the correct formula
     const bmr = calculateBMR({
@@ -288,6 +290,33 @@ const Calculator = dynamic(() => Promise.resolve(() => {
       carbsRange: macrosResult.carb_g,
       caloriesRange: macrosResult.calories
     }
+    } catch (error) {
+      console.error('Error calculating nutrition plan:', error)
+      // Return default values on error
+      return {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        water: 0,
+        idealWeight: { min: 0, max: 0 },
+        baseCalories: 0,
+        caloriesAdjustment: 0,
+        carbsAdjustment: 0,
+        macrosDetail: {
+          calories: { maintain: 0, final_min: 0, final_max: 0, delta_min: 0, delta_max: 0 },
+          protein: { min: 0, max: 0 },
+          fat: { min: 0, max: 0 },
+          carbs: { min: 0, max: 0 },
+          delta_display: { text_min: null, text_max: null, color: null },
+          notes: ''
+        },
+        proteinRange: { min: 0, max: 0 },
+        fatRange: { min: 0, max: 0 },
+        carbsRange: { min: 0, max: 0 },
+        caloriesRange: { maintain: 0, final_min: 0, final_max: 0, delta_min: 0, delta_max: 0 }
+      }
+    }
   }, [playerData, selectedPlan])
 
   // Handle calculate button click
@@ -318,12 +347,13 @@ const Calculator = dynamic(() => Promise.resolve(() => {
 
   // دالة إنشاء محتوى HTML للـ PDF
   const createPDFContent = () => {
+    try {
       const currentDate = new Date()
       const hijriDate = currentDate.toLocaleDateString('ar-SA-u-ca-islamic')
       const time = currentDate.toLocaleTimeString('ar-SA', { hour12: true })
       
-    // Calculate all nutrition plans using correct formulas
-    const { calculateBMR, calculateTDEE } = require('../../utils/calories')
+      // Calculate all nutrition plans using correct formulas
+      const { calculateBMR, calculateTDEE } = require('../../utils/calories')
     
     const bmr = calculateBMR({
       gender: playerData.gender,
@@ -914,6 +944,10 @@ const Calculator = dynamic(() => Promise.resolve(() => {
       </body>
       </html>
     `
+    } catch (error) {
+      console.error('Error creating PDF content:', error)
+      return '<html><body><h1>خطأ في إنشاء التقرير</h1></body></html>'
+    }
   }
 
 
@@ -1612,6 +1646,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
       </div>
     </div>
   )
+  
 }), { ssr: false })
 
 export default Calculator 
