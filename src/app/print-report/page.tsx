@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
+import './print-styles.css';
 
 interface NutritionData {
   name: string;
@@ -145,40 +146,40 @@ function PrintReportContent() {
 
   return (
     <div className="print-report">
-      {/* Print Button and Logout Button - Only visible on screen */}
-      <div className="print-button-container" style={{
-        display: 'flex',
-        gap: '10px',
-        justifyContent: 'center',
-        marginBottom: '20px'
-      }}>
-        <button onClick={handlePrint} className="print-button">
-          🖨️ طباعة التقرير
-        </button>
-        <button
-          onClick={() => {
-            localStorage.removeItem('isLoggedIn')
-            localStorage.removeItem('loginTime')
-            localStorage.removeItem('userEmail')
-            router.push('/login')
-          }}
-          style={{
-            background: '#dc2626',
-            color: 'white',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            transition: 'background 0.3s'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.background = '#b91c1c'}
-          onMouseOut={(e) => e.currentTarget.style.background = '#dc2626'}
-        >
-          🚪 تسجيل الخروج
-        </button>
-      </div>
+             {/* Print Button and Logout Button - Only visible on screen */}
+       <div className="print-button-container" style={{
+         display: 'none', // إخفاء زر الطباعة مؤقتاً
+         gap: '10px',
+         justifyContent: 'center',
+         marginBottom: '20px'
+       }}>
+         <button onClick={handlePrint} className="print-button">
+           🖨️ طباعة التقرير
+         </button>
+         <button
+           onClick={() => {
+             localStorage.removeItem('isLoggedIn')
+             localStorage.removeItem('loginTime')
+             localStorage.removeItem('userEmail')
+             router.push('/login')
+           }}
+           style={{
+             background: '#dc2626',
+             color: 'white',
+             border: 'none',
+             padding: '10px 20px',
+             borderRadius: '8px',
+             cursor: 'pointer',
+             fontSize: '14px',
+             fontWeight: 'bold',
+             transition: 'background 0.3s'
+           }}
+           onMouseOver={(e) => e.currentTarget.style.background = '#b91c1c'}
+           onMouseOut={(e) => e.currentTarget.style.background = '#dc2626'}
+         >
+           🚪 تسجيل الخروج
+         </button>
+       </div>
       {/* Page 1: Cover */}
       <div className="page cover-page">
         <div className="cover-background"></div>
@@ -187,11 +188,11 @@ function PrintReportContent() {
              <img src="/logo.png" alt="موصبري" />
            </div>
            <h1 className="main-title">تقرير غذائي للاعب</h1>
-          <div className="player-info">
-            <h2>{data.name || 'لم يتم إدخال الاسم'}</h2>
-            <p className="date">{currentDate}</p>
-            <p className="subtitle">حاسبة لاعب كرة القدم - موصبري</p>
-          </div>
+                     <div className="player-info">
+             <h2>{data.name || 'لم يتم إدخال الاسم'}</h2>
+             <p className="date">{currentDate}</p>
+             <p className="subtitle">موصبري برو - حاسبة لاعب كرة القدم</p>
+           </div>
           <div className="cover-decoration">
             <div className="decoration-line"></div>
             <div className="decoration-circle"></div>
@@ -275,7 +276,7 @@ function PrintReportContent() {
                 fontSize: '0.8rem',
                 marginTop: '5px'
               }}>
-                {data.calories?.delta_min > 0 ? '+' : ''}{data.calories?.delta_min} من الكربوهيدرات
+                {data.calories?.delta_min > 0 ? '+' : ''}{data.calories?.delta_min} إلى {data.calories?.delta_max} من الكربوهيدرات
               </div>
             )}
           </div>
@@ -325,11 +326,11 @@ function PrintReportContent() {
         <div className="page-logo">
           <img src="/logoforweb.png" alt="موصبري" />
         </div>
-        <div className="page-header">
-          <div className="header-icon">🔍</div>
-          <h2>تحليل الوزن والتغذية</h2>
-          <p className="header-subtitle">تحليل شامل لوزنك واحتياجاتك الغذائية</p>
-        </div>
+                 <div className="page-header">
+           <div className="header-icon">🔍</div>
+           <h2>تحليل الوزن</h2>
+           <p className="header-subtitle">وزنك تحت المجهر: اكتشف موقعك المثالي وخطواتك القادمة</p>
+         </div>
         <div className="analysis-section">
           <h3>تحليل الوزن</h3>
           <div className="weight-analysis">
@@ -351,184 +352,48 @@ function PrintReportContent() {
             </div>
           </div>
         </div>
-        <div className="analysis-section">
-          <h3>الاحتياجات الغذائية</h3>
-          <div className="nutrition-needs">
-            <div className="need-item">
-              <span className="label">البروتين اليومي:</span>
-              <span className="value">{data.protein_g?.min}-{data.protein_g?.max} غ</span>
-            </div>
-            <div className="need-item">
-              <span className="label">الكربوهيدرات اليومية:</span>
-              <span className="value">{data.carb_g?.min}-{data.carb_g?.max} غ</span>
-            </div>
-            <div className="need-item">
-              <span className="label">الدهون اليومية:</span>
-              <span className="value">{data.fat_g?.min}-{data.fat_g?.max} غ</span>
-            </div>
-            <div className="need-item">
-              <span className="label">الماء اليومي:</span>
-              <span className="value">{data.water_l || 'غير محسوب'} لتر</span>
-            </div>
-            <div className="need-item">
-              <span className="label">إجمالي السعرات:</span>
-              <span className="value">{data.calories?.final_min || 'غير محسوب'} سعرة</span>
-            </div>
-          </div>
-        </div>
+                 <div className="analysis-section">
+           <h3>نصائح للحفاظ على الوزن المثالي</h3>
+           <div className="nutrition-needs">
+             <div className="need-item">
+               <span className="label">•</span>
+               <span className="value">زن نفسك في نفس التوقيت دائمًا، ويفضل صباحًا بعد دخول الحمام وقبل تناول الإفطار، لتفادي التغيّرات الطبيعية في الوزن خلال اليوم.</span>
+             </div>
+             <div className="need-item">
+               <span className="label">•</span>
+               <span className="value">تجنب قياس الوزن يوميًا، بل يكفي مرة إلى مرتين في الأسبوع، حتى تحصل على متوسط أدق وتتجنب القلق من التذبذب الطبيعي.</span>
+             </div>
+             <div className="need-item">
+               <span className="label">•</span>
+               <span className="value">راقب الاتجاه العام للوزن، وليس الرقم اليومي، فالتقلبات البسيطة طبيعية بسبب السوائل أو الوجبات.</span>
+             </div>
+             <div className="need-item">
+               <span className="label">•</span>
+               <span className="value">ادمج تمارين القوة في جدولك للحفاظ على الكتلة العضلية، فهي تساعد على استقرار الوزن المثالي وزيادة معدل الحرق.</span>
+             </div>
+             <div className="need-item">
+               <span className="label">•</span>
+               <span className="value">حافظ على ترطيب جيد بشرب كمية كافية من الماء يوميًا، فالجفاف قد يؤثر على قياس الوزن والأداء.</span>
+             </div>
+             <div className="need-item">
+               <span className="label">•</span>
+               <span className="value">وزن نفسك بنفس الميزان والمكان لتجنب اختلاف القياسات بسبب الأجهزة أو الأسطح المختلفة.</span>
+             </div>
+             <div className="need-item">
+               <span className="label">•</span>
+               <span className="value">بالالتزام بهذه العادات، يصبح الوصول والحفاظ على الوزن المثالي عملية أكثر دقة وواقعية، بعيدًا عن القراءات المضللة أو التغيرات المؤقتة.</span>
+             </div>
+           </div>
+         </div>
         <div className="report-footer">
           <p>تم إنشاء هذا التقرير بواسطة نظام موصبري برو للتغذية الرياضية</p>
           <p>جميع الحقوق محفوظة © {new Date().getFullYear()}</p>
         </div>
       </div>
 
-      {/* Page 5: Three Nutrition Plans */}
-      <div className="page page-5">
-        <div className="page-logo">
-          <img src="/logoforweb.png" alt="موسبري" />
-        </div>
-        <div className="page-header">
-          <div className="header-icon">📋</div>
-          <h2>الخطط الغذائية الثلاث</h2>
-          <p className="header-subtitle">خطط مخصصة لتحقيق أهدافك الرياضية</p>
-        </div>
-        <div className="plans-grid">
-          <div className="plan-card weight-gain">
-            <div className="plan-header">
-              <div className="plan-icon">📈</div>
-              <h3>خطة زيادة الوزن الصحية</h3>
-            </div>
-            <div className="plan-details">
-              <div className="detail-item">
-                <span className="label">السعرات:</span>
-                <span className="value">{typeof data.plans?.bulk?.cal === 'number' ? data.plans.bulk.cal : 'غير محسوب'}</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">البروتين:</span>
-                <span className="value">
-                  {typeof data.plans?.bulk?.protein_g === 'number' 
-                    ? `${data.plans.bulk.protein_g} غ`
-                    : typeof data.plans?.bulk?.protein_g === 'object'
-                    ? `${data.plans.bulk.protein_g.min}-${data.plans.bulk.protein_g.max} غ`
-                    : 'غير محسوب'}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">الكربوهيدرات:</span>
-                <span className="value">
-                  {typeof data.plans?.bulk?.carb_g === 'number' 
-                    ? `${data.plans.bulk.carb_g} غ`
-                    : typeof data.plans?.bulk?.carb_g === 'object'
-                    ? `${data.plans.bulk.carb_g.min}-${data.plans.bulk.carb_g.max} غ`
-                    : 'غير محسوب'}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">الدهون:</span>
-                <span className="value">
-                  {typeof data.plans?.bulk?.fat_g === 'number' 
-                    ? `${data.plans.bulk.fat_g} غ`
-                    : typeof data.plans?.bulk?.fat_g === 'object'
-                    ? `${data.plans.bulk.fat_g.min}-${data.plans.bulk.fat_g.max} غ`
-                    : 'غير محسوب'}
-                </span>
-              </div>
-            </div>
-          </div>
+      
 
-          <div className="plan-card maintenance">
-            <div className="plan-header">
-              <div className="plan-icon">⚖️</div>
-              <h3>خطة المحافظة على الوزن</h3>
-            </div>
-            <div className="plan-details">
-              <div className="detail-item">
-                <span className="label">السعرات:</span>
-                <span className="value">{typeof data.plans?.maintain?.cal === 'number' ? data.plans.maintain.cal : 'غير محسوب'}</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">البروتين:</span>
-                <span className="value">
-                  {typeof data.plans?.maintain?.protein_g === 'number' 
-                    ? `${data.plans.maintain.protein_g} غ`
-                    : typeof data.plans?.maintain?.protein_g === 'object'
-                    ? `${data.plans.maintain.protein_g.min}-${data.plans.maintain.protein_g.max} غ`
-                    : 'غير محسوب'}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">الكربوهيدرات:</span>
-                <span className="value">
-                  {typeof data.plans?.maintain?.carb_g === 'number' 
-                    ? `${data.plans.maintain.carb_g} غ`
-                    : typeof data.plans?.maintain?.carb_g === 'object'
-                    ? `${data.plans.maintain.carb_g.min}-${data.plans.maintain.carb_g.max} غ`
-                    : 'غير محسوب'}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">الدهون:</span>
-                <span className="value">
-                  {typeof data.plans?.maintain?.fat_g === 'number' 
-                    ? `${data.plans.maintain.fat_g} غ`
-                    : typeof data.plans?.maintain?.fat_g === 'object'
-                    ? `${data.plans.maintain.fat_g.min}-${data.plans.maintain.fat_g.max} غ`
-                    : 'غير محسوب'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="plan-card weight-loss">
-            <div className="plan-header">
-              <div className="plan-icon">📉</div>
-              <h3>خطة خسارة الوزن الصحية</h3>
-            </div>
-            <div className="plan-details">
-              <div className="detail-item">
-                <span className="label">السعرات:</span>
-                <span className="value">{typeof data.plans?.cut?.cal === 'number' ? data.plans.cut.cal : 'غير محسوب'}</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">البروتين:</span>
-                <span className="value">
-                  {typeof data.plans?.cut?.protein_g === 'number' 
-                    ? `${data.plans.cut.protein_g} غ`
-                    : typeof data.plans?.cut?.protein_g === 'object'
-                    ? `${data.plans.cut.protein_g.min}-${data.plans.cut.protein_g.max} غ`
-                    : 'غير محسوب'}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">الكربوهيدرات:</span>
-                <span className="value">
-                  {typeof data.plans?.cut?.carb_g === 'number' 
-                    ? `${data.plans.cut.carb_g} غ`
-                    : typeof data.plans?.cut?.carb_g === 'object'
-                    ? `${data.plans.cut.carb_g.min}-${data.plans.cut.carb_g.max} غ`
-                    : 'غير محسوب'}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="label">الدهون:</span>
-                <span className="value">
-                  {typeof data.plans?.cut?.fat_g === 'number' 
-                    ? `${data.plans.cut.fat_g} غ`
-                    : typeof data.plans?.cut?.fat_g === 'object'
-                    ? `${data.plans.cut.fat_g.min}-${data.plans.cut.fat_g.max} غ`
-                    : 'غير محسوب'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="report-footer">
-          <p>تم إنشاء هذا التقرير بواسطة نظام موصبري برو للتغذية الرياضية</p>
-          <p>جميع الحقوق محفوظة © {new Date().getFullYear()}</p>
-        </div>
-      </div>
-
-      {/* Page 6: Performance Tips */}
+             {/* Page 5: Performance Tips */}
       <div className="page">
         <div className="page-logo">
           <img src="/logoforweb.png" alt="موسبري" />
@@ -539,13 +404,14 @@ function PrintReportContent() {
           <p className="header-subtitle">نصائح ذهبية لتحسين أدائك الرياضي</p>
         </div>
         <div className="tips-section">
-          <div className="tip-item">
-            <div className="tip-icon">💧</div>
-            <div className="tip-content">
-              <h3>شرب الماء</h3>
-              <p>احرص على شرب {data.water_l || '2-3'} لتر من الماء يومياً، خاصة قبل وأثناء وبعد التدريبات.</p>
-            </div>
-          </div>
+                     <div className="tip-item">
+             <div className="tip-icon">💧</div>
+             <div className="tip-content">
+               <h3>شرب الماء</h3>
+               <p>احرص على شرب {data.water_l || '2-3'} لتر من الماء يومياً، خاصة قبل وأثناء وبعد التدريبات.</p>
+               <p>إذا كنت تعيش في بيئة حارة (+35 C): أضف زيادة قدرها 10 إلى 20 % إلى احتياجك اليومي من المياه</p>
+             </div>
+           </div>
           <div className="tip-item">
             <div className="tip-icon">⏰</div>
             <div className="tip-content">
@@ -581,7 +447,7 @@ function PrintReportContent() {
         </div>
       </div>
 
-      {/* Page 7: Sleep & Recovery + Footer */}
+             {/* Page 6: Sleep & Recovery + Footer */}
       <div className="page">
         <div className="page-logo">
           <img src="/logoforweb.png" alt="موسبري" />
@@ -614,14 +480,16 @@ function PrintReportContent() {
         </div>
       </div>
 
-      <style jsx>{`
-        .print-report {
-          direction: rtl;
-          font-family: 'Cairo', sans-serif;
-          background: white;
-          color: #333;
-          line-height: 1.6;
-        }
+             <style jsx>{`
+
+
+         .print-report {
+           direction: rtl;
+           font-family: 'Cairo', sans-serif;
+           background: white;
+           color: #333;
+           line-height: 1.6;
+         }
 
                  .page {
            page-break-after: always;
@@ -1024,122 +892,7 @@ function PrintReportContent() {
           color: #2E7D32;
         }
 
-                 /* Plans Grid */
-         .plans-grid {
-           display: grid;
-           grid-template-columns: 1fr;
-           gap: 20px;
-           margin-top: 30px;
-           margin-bottom: 40px;
-         }
-
-                 .plan-card {
-           padding: 20px;
-           border-radius: 16px;
-           border: 3px solid;
-           box-shadow: 
-             0 4px 12px rgba(0,0,0,0.1),
-             inset 0 1px 0 rgba(255,255,255,0.8);
-           position: relative;
-           overflow: hidden;
-         }
-
-        .plan-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 4px;
-        }
-
-        .plan-card::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: 
-            radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%);
-          pointer-events: none;
-        }
-
-        .plan-card.weight-gain {
-          background: 
-            linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%),
-            radial-gradient(circle at top right, rgba(255, 152, 0, 0.1) 0%, transparent 50%);
-          border-color: #FF9800;
-        }
-
-        .plan-card.weight-gain::before {
-          background: linear-gradient(90deg, #FF9800, #F57C00);
-        }
-
-        .plan-card.maintenance {
-          background: 
-            linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%),
-            radial-gradient(circle at top right, rgba(76, 175, 80, 0.1) 0%, transparent 50%);
-          border-color: #4CAF50;
-        }
-
-        .plan-card.maintenance::before {
-          background: linear-gradient(90deg, #4CAF50, #2E7D32);
-        }
-
-        .plan-card.weight-loss {
-          background: 
-            linear-gradient(135deg, #FCE4EC 0%, #F8BBD9 100%),
-            radial-gradient(circle at top right, rgba(233, 30, 99, 0.1) 0%, transparent 50%);
-          border-color: #E91E63;
-        }
-
-        .plan-card.weight-loss::before {
-          background: linear-gradient(90deg, #E91E63, #C2185B);
-        }
-
-        .plan-header {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 20px;
-          gap: 10px;
-        }
-
-        .plan-icon {
-          font-size: 24px;
-        }
-
-        .plan-card h3 {
-          text-align: center;
-          font-size: 20px;
-          margin: 0;
-          font-weight: 700;
-        }
-
-        .plan-details {
-          display: grid;
-          gap: 12px;
-        }
-
-        .detail-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 10px 15px;
-          background: 
-            rgba(255,255,255,0.8),
-            radial-gradient(circle at top left, rgba(255,255,255,0.3) 0%, transparent 50%);
-          border-radius: 8px;
-          box-shadow: 
-            0 1px 3px rgba(0,0,0,0.1),
-            inset 0 1px 0 rgba(255,255,255,0.9);
-        }
-
-        .detail-item .label {
-          font-weight: 600;
-        }
+                 
 
                  /* Tips Section */
          .tips-section {
@@ -1282,88 +1035,7 @@ function PrintReportContent() {
           color: #d32f2f;
         }
 
-        /* Print Styles */
-        @media print {
-          @page { 
-            size: A4; 
-            margin: 1.5cm; 
-          }
 
-          .page {
-            box-sizing: border-box;
-            min-height: calc(297mm - 3cm); /* ارتفاع المحتوى داخل الهامش */
-            page-break-after: always;
-            page-break-inside: avoid;
-            break-inside: avoid;
-            padding: 15mm;
-            margin: 0;
-          }
-          
-          .page:last-child { 
-            page-break-after: auto; 
-          }
-
-          /* صفحة الخطط الغذائية الثلاث (رقم 5) */
-          .page.page-5 .plans-grid {
-            display: grid;
-            grid-template-rows: repeat(3, 1fr); /* كل بطاقة تأخذ ثلث الارتفاع */
-            gap: 8mm;
-            height: calc(297mm - 8cm); /* ارتفاع الصفحة ناقص الهوامش والعناوين */
-          }
-          
-          .page.page-5 .plan-card {
-            break-inside: avoid;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            /* اضبط الحشو ليمنع تمدد الصفحة */
-            padding: 6mm 8mm;
-            min-height: 0;
-            overflow: hidden;
-          }
-          
-          /* منع أي تجاوز رأسي يسبب صفحة أطول */
-          .page.page-5 { 
-            overflow: hidden; 
-            height: 297mm;
-          }
-
-          /* إخفاء أزرار الطباعة */
-          .print-button-container {
-            display: none !important;
-          }
-
-          /* إزالة الظلال والخلفيات */
-          .page {
-            box-shadow: none !important;
-            background: white !important;
-            border: none !important;
-          }
-
-          /* ضبط الخطوط للطباعة */
-          body {
-            font-size: 12pt;
-            line-height: 1.4;
-          }
-
-          /* منع انقسام العناصر */
-          .result-card, .plan-card, .tip-item, .analysis-item, .need-item {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-          }
-          
-          /* ضبط العناوين للطباعة */
-          h1, h2, h3 {
-            page-break-after: avoid;
-            break-after: avoid;
-          }
-          
-          /* ضبط الجداول للطباعة */
-          .info-grid, .results-grid, .plans-grid {
-            page-break-inside: avoid;
-            break-inside: avoid;
-          }
-        }
 
         /* Print Button Styles */
         .print-button-container {
@@ -1412,19 +1084,7 @@ function PrintReportContent() {
             border-radius: 8px;
           }
           
-          /* تنسيق صفحة الخطط على الشاشة */
-          .page.page-5 .plans-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-          }
           
-          .page.page-5 .plan-card {
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: white;
-          }
         }
       `}</style>
     </div>

@@ -1,0 +1,422 @@
+/* Print Styles - ملف أنماط الطباعة */
+@media print {
+  @page { 
+    size: A4 portrait; 
+    margin: 1.5cm; 
+  }
+
+  /* إجبار تطبيق الألوان في الطباعة */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* إخفاء أزرار الطباعة */
+  .print-button-container {
+    display: none !important;
+  }
+
+  /* إعادة تعيين جميع الأنماط للطباعة */
+  body {
+    background: white !important;
+    color: #333 !important;
+    font-family: 'Cairo', sans-serif !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* الحفاظ على التصميم الأصلي */
+  .page {
+    box-sizing: border-box !important;
+    min-height: calc(297mm - 3cm) !important;
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    padding: 20mm !important;
+    margin: 0 !important;
+    background: white !important;
+    color: #333 !important;
+    direction: rtl !important;
+    font-family: 'Cairo', sans-serif !important;
+    line-height: 1.6 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    position: relative !important;
+    overflow: visible !important;
+  }
+  
+  .page:last-child { 
+    page-break-after: auto !important; 
+  }
+
+  /* الحفاظ على الخلفيات والتصميم */
+  .cover-page {
+    background: #4CAF50 !important;
+    color: white !important;
+    padding: 40mm !important;
+  }
+
+  .cover-page .cover-background {
+    display: block !important;
+  }
+
+  .cover-page .main-title {
+    color: white !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3) !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+    background-clip: unset !important;
+  }
+
+  /* الحفاظ على الألوان والتصميم */
+  .page-header h2 {
+    color: #2E7D32 !important;
+  }
+
+  .page-header::after {
+    background: #4CAF50 !important;
+  }
+
+  .result-card {
+    background: #E8F5E8 !important;
+    border: 2px solid #4CAF50 !important;
+    box-shadow: none !important;
+  }
+
+  .result-card h3 {
+    color: #2E7D32 !important;
+  }
+
+  .result-card .value {
+    color: #1B5E20 !important;
+  }
+
+  .info-item {
+    background: #f8f9fa !important;
+    border-right: 4px solid #4CAF50 !important;
+    box-shadow: none !important;
+  }
+
+  .info-item .label {
+    color: #2E7D32 !important;
+  }
+
+  .analysis-section h3 {
+    color: #2E7D32 !important;
+    border-bottom: 2px solid #4CAF50 !important;
+  }
+
+  .analysis-section h3::after {
+    background: #2E7D32 !important;
+  }
+
+  .tip-item {
+    background: #f8f9fa !important;
+    border-left: 4px solid #4CAF50 !important;
+    box-shadow: none !important;
+  }
+
+  .tip-content h3 {
+    color: #2E7D32 !important;
+  }
+
+  .sleep-section h3, .recovery-section h3 {
+    color: #2E7D32 !important;
+    border-bottom: 2px solid #4CAF50 !important;
+  }
+
+  .sleep-section h3::after, .recovery-section h3::after {
+    background: #2E7D32 !important;
+  }
+
+  .sleep-recommendations, .recovery-tips {
+    background: #f8f9fa !important;
+    box-shadow: none !important;
+  }
+
+  .report-footer {
+    border-top: 2px solid #4CAF50 !important;
+    color: #666 !important;
+  }
+
+  /* الحفاظ على الأيقونات */
+  .card-icon, .header-icon, .tip-icon {
+    display: block !important;
+    font-size: 24px !important;
+  }
+
+  /* منع انقسام العناصر */
+  .result-card, .tip-item, .analysis-item, .need-item, .info-item {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* ضبط العناوين للطباعة */
+  h1, h2, h3 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  
+  /* ضبط الجداول للطباعة */
+  .info-grid, .results-grid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* الحفاظ على الصور */
+  img {
+    display: block !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* الحفاظ على التخطيط */
+  .page-logo {
+    position: absolute !important;
+    top: 20px !important;
+    right: 20px !important;
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  /* الحفاظ على التدرجات اللونية */
+  .page::before {
+    background: #4CAF50 !important;
+  }
+
+  /* ضبط أحجام الخطوط للطباعة */
+  .main-title {
+    font-size: 48px !important;
+  }
+
+  .page-header h2 {
+    font-size: 28px !important;
+  }
+
+  .result-card h3 {
+    font-size: 16px !important;
+  }
+
+  .result-card .value {
+    font-size: 20px !important;
+  }
+
+  /* إزالة التأثيرات غير المرغوبة */
+  .page::after {
+    display: none !important;
+  }
+
+  .info-item:hover, .result-card:hover, .tip-item:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* إجبار تطبيق الألوان */
+  .delta-note {
+    color: inherit !important;
+  }
+
+  /* ضبط الطباعة للعناصر المتبقية */
+  .weight-analysis, .nutrition-needs {
+    display: grid !important;
+    gap: 15px !important;
+  }
+
+  .analysis-item, .need-item {
+    background: #f8f9fa !important;
+    border-left: 4px solid #4CAF50 !important;
+    box-shadow: none !important;
+  }
+
+  .analysis-item .label, .need-item .label {
+    color: #2E7D32 !important;
+  }
+
+  /* إزالة جميع الظلال والتأثيرات */
+  .page, .result-card, .info-item, .tip-item, .analysis-item, .need-item {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* ضبط الألوان للطباعة */
+  .delta-note[style*="color: #22c55e"] {
+    color: #22c55e !important;
+  }
+
+  .delta-note[style*="color: #dc2626"] {
+    color: #dc2626 !important;
+  }
+
+  /* إجبار تطبيق الألوان للطباعة */
+  .page {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ضبط الطباعة للعناصر المتبقية */
+  .cover-page {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .result-card, .info-item, .tip-item, .analysis-item, .need-item {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* إزالة جميع التدرجات المعقدة */
+  .page {
+    background: white !important;
+  }
+
+  .cover-page {
+    background: #4CAF50 !important;
+  }
+
+  .result-card {
+    background: #E8F5E8 !important;
+  }
+
+  .info-item, .tip-item, .analysis-item, .need-item {
+    background: #f8f9fa !important;
+  }
+
+  .sleep-recommendations, .recovery-tips {
+    background: #f8f9fa !important;
+  }
+
+  /* ضبط الألوان النصية */
+  .page-header h2 {
+    color: #2E7D32 !important;
+  }
+
+  .result-card h3 {
+    color: #2E7D32 !important;
+  }
+
+  .result-card .value {
+    color: #1B5E20 !important;
+  }
+
+  .info-item .label, .analysis-item .label, .need-item .label {
+    color: #2E7D32 !important;
+  }
+
+  .tip-content h3 {
+    color: #2E7D32 !important;
+  }
+
+  .sleep-section h3, .recovery-section h3 {
+    color: #2E7D32 !important;
+  }
+
+  /* ضبط الحدود */
+  .page-header {
+    border-bottom: 3px solid #4CAF50 !important;
+  }
+
+  .page-header::after {
+    background: #4CAF50 !important;
+  }
+
+  .result-card {
+    border: 2px solid #4CAF50 !important;
+  }
+
+  .info-item {
+    border-right: 4px solid #4CAF50 !important;
+  }
+
+  .analysis-item, .need-item {
+    border-left: 4px solid #4CAF50 !important;
+  }
+
+  .tip-item {
+    border-left: 4px solid #4CAF50 !important;
+  }
+
+  .analysis-section h3 {
+    border-bottom: 2px solid #4CAF50 !important;
+  }
+
+  .sleep-section h3, .recovery-section h3 {
+    border-bottom: 2px solid #4CAF50 !important;
+  }
+
+  .report-footer {
+    border-top: 2px solid #4CAF50 !important;
+  }
+
+  /* ضبط الألوان للعناصر المحددة */
+  .delta-note {
+    color: #22c55e !important;
+  }
+
+  .delta-note[style*="color: #dc2626"] {
+    color: #dc2626 !important;
+  }
+
+  /* إزالة جميع التأثيرات الحركية */
+  .info-item, .result-card, .tip-item {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  /* ضبط التخطيط */
+  .page {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .info-grid, .results-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+  }
+
+  .weight-analysis, .nutrition-needs {
+    display: grid !important;
+    gap: 15px !important;
+  }
+
+  .tips-section {
+    display: grid !important;
+    gap: 20px !important;
+  }
+
+  /* ضبط المسافات */
+  .page-header {
+    margin-bottom: 30px !important;
+    margin-top: 20px !important;
+    padding-bottom: 15px !important;
+  }
+
+  .results-grid {
+    margin-top: 30px !important;
+    margin-bottom: 40px !important;
+  }
+
+  .tips-section {
+    margin-top: 30px !important;
+    margin-bottom: 40px !important;
+  }
+
+  .analysis-section {
+    margin-bottom: 30px !important;
+  }
+
+  .sleep-section, .recovery-section {
+    margin-bottom: 30px !important;
+  }
+
+  .report-footer {
+    margin-top: auto !important;
+    padding-top: 20px !important;
+  }
+}

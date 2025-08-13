@@ -1823,7 +1823,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 minWidth: '200px'
               }}
             >
-              {isExporting ? 'جاري التصدير...' : 'تقرير احترافي (طباعة)'}
+              {isExporting ? 'جاري التصدير...' : 'شاهد تقريرك الغذائي'}
             </button>
           </div>
         )}
