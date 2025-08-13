@@ -119,7 +119,7 @@ const PROTEIN_RATIOS = {
     cut: { min: 1.2, max: 1.5 },
     bulk: { min: 1.2, max: 1.5 }
   },
-  '13-18': {
+  '13-17': {
     maintain: { min: 1.0, max: 1.4 },
     cut: { min: 1.6, max: 2.0 },
     bulk: { min: 1.6, max: 2.0 }
@@ -137,7 +137,7 @@ const CALORIE_DELTAS = {
     cut: { min: -200, max: -100 },
     bulk: { min: 200, max: 400 }
   },
-  '13-18': {
+  '13-17': {
     cut: { min: -400, max: -200 },
     bulk: { min: 200, max: 400 }
   },
@@ -158,7 +158,7 @@ const FAT_RATIOS = {
  */
 function getAgeGroup(age: number): keyof typeof PROTEIN_RATIOS {
   if (age >= 9 && age <= 12) return '9-12';
-  if (age >= 13 && age <= 17) return '13-18'; // 13–17 فقط
+  if (age >= 13 && age <= 17) return '13-17'; // 13–17 فقط
   if (age >= 18) return '18+'; // 18+ يبدأ من 18
   throw new Error('هذه الحاسبة تدعم أعمار 9 سنوات فأكثر.');
 }
@@ -280,6 +280,36 @@ export function computeMacros(input: MacroInput): MacroOutput {
   
   if (Math.abs(e_min_combo_minCal - finalCaloriesMin) > 1 || Math.abs(e_max_combo_maxCal - finalCaloriesMax) > 1) {
     console.warn('Energy mismatch > 1 kcal — check rounding or bounds');
+  }
+  
+  // اختبارات داخلية للتأكد من تطبيق القواعد المرجعية
+  if (typeof window !== 'undefined') {
+    // اختبار 18+، وزن 70، سعرات 2500 (محافظة)
+    if (age_years >= 18 && weight_kg === 70 && total_calories === 2500 && goal === 'maintain') {
+      // البروتين: 98–112 غ (1.4-1.6 غ/كجم)
+      const expectedProteinMin = Math.round(1.4 * 70); // 98
+      const expectedProteinMax = Math.round(1.6 * 70); // 112
+      console.assert(
+        Math.round(protein_g_min_raw) === expectedProteinMin,
+        `Protein min error: expected ${expectedProteinMin}, got ${Math.round(protein_g_min_raw)}`
+      );
+      console.assert(
+        Math.round(protein_g_max_raw) === expectedProteinMax,
+        `Protein max error: expected ${expectedProteinMax}, got ${Math.round(protein_g_max_raw)}`
+      );
+      
+      // الدهون: 69–97 غ (25-35% من 2500)
+      const expectedFatMin = Math.round((0.25 * 2500) / 9); // 69.44 → 69
+      const expectedFatMax = Math.round((0.35 * 2500) / 9); // 97.22 → 97
+      console.assert(
+        Math.round(fat_min_raw_minCal) === expectedFatMin,
+        `Fat min error: expected ${expectedFatMin}, got ${Math.round(fat_min_raw_minCal)}`
+      );
+      console.assert(
+        Math.round(fat_max_raw_maxCal) === expectedFatMax,
+        `Fat max error: expected ${expectedFatMax}, got ${Math.round(fat_max_raw_maxCal)}`
+      );
+    }
   }
   
   // إنشاء عرض فرق السعرات

@@ -62,11 +62,11 @@ export function calculateBMR({
   ageYears: number;
 }): number {
   if (gender === 'ذكر') {
-    // BMR_male = 66.47 + (13.75 × الوزن) + (5 × الطول) − (4.7 × العمر)
-    return Math.round(66.47 + 13.75 * weightKg + 5 * heightCm - 4.7 * ageYears);
+    // BMR_male = 66.47 + (13.75 × الوزن) + (5 × الطول) − (6.75 × العمر)
+    return 66.47 + 13.75 * weightKg + 5 * heightCm - 6.75 * ageYears;
   } else {
     // BMR_female = 655 + (9.6 × الوزن) + (1.85 × الطول) − (4.7 × العمر)
-    return Math.round(655 + 9.6 * weightKg + 1.85 * heightCm - 4.7 * ageYears);
+    return 655 + 9.6 * weightKg + 1.85 * heightCm - 4.7 * ageYears;
   }
 }
 
@@ -82,7 +82,7 @@ export function calculateTDEE({
   if (!factor) {
     throw new Error(`Unknown activity level: ${activityLabel}`);
   }
-  return Math.round(bmr * factor);
+  return bmr * factor;
 }
 
 // دالة رئيسية لحساب كل شيء
@@ -98,7 +98,12 @@ export function calculateCalories({
   heightCm: number;
   ageYears: number;
   activityLevel: ActivityLevel;
-}): { bmr: number; tdee: number; isValid: boolean; error?: string } {
+}): {
+  isValid: boolean;
+  error?: string;
+  bmr?: number;
+  tdee?: number;
+} {
   // التحقق من صحة المدخلات
   const validation = validateInputs({
     weightKg,
@@ -109,7 +114,7 @@ export function calculateCalories({
   });
   
   if (!validation.isValid) {
-    return { bmr: 0, tdee: 0, isValid: false, error: validation.error };
+    return validation;
   }
   
   // حساب BMR
@@ -118,5 +123,37 @@ export function calculateCalories({
   // حساب TDEE
   const tdee = calculateTDEE({ bmr, activityLabel: activityLevel });
   
-  return { bmr, tdee, isValid: true };
+  // اختبارات داخلية للتأكد من تطبيق القواعد المرجعية
+  if (typeof window !== 'undefined') {
+    // اختبار ذكر 70كجم/175سم/25سنة
+    if (gender === 'ذكر' && weightKg === 70 && heightCm === 175 && ageYears === 25) {
+      const expectedBMR = 66.47 + 13.75 * 70 + 5 * 175 - 6.75 * 25; // 1735.22
+      console.assert(
+        Math.abs(bmr - expectedBMR) < 0.01,
+        `BMR calculation error: expected ${expectedBMR}, got ${bmr}`
+      );
+      
+      // اختبار TDEE مع كسول (1.2)
+      const expectedTDEE = expectedBMR * 1.2; // 2082.264
+      console.assert(
+        Math.abs(tdee - expectedTDEE) < 0.01,
+        `TDEE calculation error: expected ${expectedTDEE}, got ${tdee}`
+      );
+    }
+    
+    // اختبار أنثى 60كجم/165سم/25سنة
+    if (gender === 'أنثى' && weightKg === 60 && heightCm === 165 && ageYears === 25) {
+      const expectedBMR = 655 + 9.6 * 60 + 1.85 * 165 - 4.7 * 25; // 1418.75
+      console.assert(
+        Math.abs(bmr - expectedBMR) < 0.01,
+        `BMR calculation error: expected ${expectedBMR}, got ${bmr}`
+      );
+    }
+  }
+  
+  return {
+    isValid: true,
+    bmr: Math.round(bmr), // التقريب في الإخراج فقط
+    tdee: Math.round(tdee) // التقريب في الإخراج فقط
+  };
 }
