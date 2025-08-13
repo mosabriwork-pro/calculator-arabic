@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import ErrorBoundary from '../../components/ErrorBoundary'
 
 // Dynamically import Chart.js components
 const Pie = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Pie })), { ssr: false })
