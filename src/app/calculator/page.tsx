@@ -72,7 +72,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
     weight: 30,
     height: 175,
     gender: 'ذكر',
-    position: 'مهاجم',
+    position: 'محور (دفاعي أو هجومي)',
     activityLevel: 'نشاط متوسط (3-4 أيام تمرين اسبوعيا)'
   })
 
@@ -103,7 +103,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               weight: typeof parsed.weight === 'number' && parsed.weight >= 20 && parsed.weight <= 200 ? parsed.weight : 30,
               height: typeof parsed.height === 'number' && parsed.height >= 100 && parsed.height <= 250 ? parsed.height : 175,
               gender: parsed.gender === 'أنثى' ? 'أنثى' : 'ذكر',
-              position: parsed.position || 'مهاجم',
+              position: parsed.position || 'محور (دفاعي أو هجومي)',
               activityLevel: parsed.activityLevel || 'نشاط متوسط (3-4 أيام تمرين اسبوعيا)'
             }))
           }
@@ -181,42 +181,41 @@ const Calculator = dynamic(() => Promise.resolve(() => {
     return errors.length === 0
   }
 
-  // Calculate ideal weight
+  // Calculate ideal weight using the correct rules from reference images
   const calculateIdealWeight = (height: number, position: string) => {
-    const baseWeight = height - 100
-    let minWeight = baseWeight * 0.9
-    let maxWeight = baseWeight * 1.1
+    // Base formula: (height_cm - 100)
+    const base = height - 100
     
-    // Adjust based on position
-    switch (position) {
-      case 'حارس مرمى':
-        minWeight *= 1.05
-        maxWeight *= 1.15
-        break
-      case 'مدافع':
-        minWeight *= 1.02
-        maxWeight *= 1.08
-        break
-      case 'محور':
-        minWeight *= 0.98
-        maxWeight *= 1.02
-        break
-      case 'مهاجم':
-        minWeight *= 0.95
-        maxWeight *= 0.98
-        break
+    // Position offsets exactly as specified in reference images
+    const positionOffsets = {
+      'حارس مرمى': { min: -5, max: 2 },
+      'مدافع قلب': { min: -5, max: 2 },
+      'مدافع ظهير': { min: -6, max: 0 },
+      'محور (دفاعي أو هجومي)': { min: -5, max: 0 },
+      'مهاجم صريح/وهمي': { min: -5, max: 3 },
+      'مهاجم جناح': { min: -7, max: 0 }
     }
     
-    return {
-      min: Math.round(minWeight),
-      max: Math.round(maxWeight)
+    // Get offsets for the selected position
+    const offsets = positionOffsets[position as keyof typeof positionOffsets]
+    
+    if (!offsets) {
+      // Default to midfielder if position not recognized
+      return { min: Math.round(base - 5), max: Math.round(base + 0) }
     }
+    
+    // Apply offsets: min = base + offset.min, max = base + offset.max
+    const min = Math.round(base + offsets.min)
+    const max = Math.round(base + offsets.max)
+    
+    return { min, max }
   }
 
-  // Calculate nutrition plan
+  // Calculate nutrition plan using the correct units
   const nutritionPlan = useMemo(() => {
     // Import the correct calculation functions
     const { calculateBMR, calculateTDEE } = require('../../utils/calories')
+    const { computeMacros } = require('../../utils/macros')
     
     // Calculate BMR using the correct formula
     const bmr = calculateBMR({
@@ -235,76 +234,59 @@ const Calculator = dynamic(() => Promise.resolve(() => {
       'نشاط مكثف (تمرين يومي + نشاط بدني)': 1.9
     }
     
-    // Position multipliers
-    const positionMultipliers = {
-      'حارس مرمى': 1.1,
-      'مدافع': 1.15,
-      'محور': 1.2,
-      'مهاجم': 1.25
-    }
+    // Calculate TDEE (without position multipliers - those are for specific sports)
+    const tdee = bmr * activityMultipliers[playerData.activityLevel as keyof typeof activityMultipliers]
     
-    // Calculate base calories
-    let baseCalories = bmr * 
-      activityMultipliers[playerData.activityLevel as keyof typeof activityMultipliers] * 
-      positionMultipliers[playerData.position as keyof typeof positionMultipliers]
+    // Convert plan names to match macros.ts
+    const planMap = {
+      'maintain': 'maintain',
+      'gain': 'bulk',
+      'lose': 'cut'
+    } as const
     
-    // Calculate maintain plan
-    const maintainCalories = Math.round(baseCalories)
-    const maintainProtein = Math.round(maintainCalories * 0.25 / 4)
-    const maintainFat = Math.round(maintainCalories * 0.25 / 9)
-    const maintainCarbs = Math.round((maintainCalories - (maintainProtein * 4) - (maintainFat * 9)) / 4)
+    // Use the correct macros calculation
+    const macrosResult = computeMacros({
+      age_years: playerData.age,
+      weight_kg: playerData.weight,
+      total_calories: Math.round(tdee),
+      goal: planMap[selectedPlan]
+    })
     
-    // Apply plan adjustments
-    let totalCalories = maintainCalories
-    let protein = maintainProtein
-    let fat = maintainFat
-    let carbs = maintainCarbs
-    let caloriesAdjustment = 0
-    let carbsAdjustment = 0
+
     
-    if (selectedPlan === 'gain') {
-      if (playerData.age >= 9 && playerData.age <= 12) {
-        caloriesAdjustment = 150
-        carbsAdjustment = 40
-      } else if (playerData.age >= 13 && playerData.age <= 18) {
-        caloriesAdjustment = 300
-        carbsAdjustment = 75
-      } else if (playerData.age > 18) {
-        caloriesAdjustment = 400
-        carbsAdjustment = 100
-      }
-    } else if (selectedPlan === 'lose') {
-      if (playerData.age >= 9 && playerData.age <= 12) {
-        caloriesAdjustment = -150
-        carbsAdjustment = -40
-      } else if (playerData.age >= 13 && playerData.age <= 18) {
-        caloriesAdjustment = -300
-        carbsAdjustment = -75
-      } else if (playerData.age > 18) {
-        caloriesAdjustment = -400
-        carbsAdjustment = -100
-      }
-    }
-    
-    totalCalories += caloriesAdjustment
-    carbs += carbsAdjustment
-    
-    // Water calculation
+    // Water calculation (4% of body weight)
     const water = Math.round(playerData.weight * 0.04 * 100) / 100
     
     // Ideal weight
     const idealWeight = calculateIdealWeight(playerData.height, playerData.position)
     
     return {
-      calories: totalCalories,
-      protein,
-      carbs,
-      fat,
+      // السعرات: قيمة واحدة حسب الخطة
+      calories: selectedPlan === 'maintain' 
+        ? macrosResult.calories.maintain 
+        : Math.round((macrosResult.calories.final_min + macrosResult.calories.final_max) / 2),
+      protein: macrosResult.protein_g.max,
+      carbs: macrosResult.carb_g.max,
+      fat: macrosResult.fat_g.max,
       water,
       idealWeight,
-      baseCalories: maintainCalories,
-      caloriesAdjustment,
-      carbsAdjustment
+      baseCalories: Math.round(tdee),
+      caloriesAdjustment: macrosResult.calories.delta_max,
+      carbsAdjustment: 0, // Calculated automatically by macros.ts
+      // Add detailed macros info with ranges
+      macrosDetail: {
+        calories: macrosResult.calories,
+        protein: macrosResult.protein_g,
+        fat: macrosResult.fat_g,
+        carbs: macrosResult.carb_g,
+        delta_display: macrosResult.delta_display,
+        notes: macrosResult.notes
+      },
+      // Add ranges for display
+      proteinRange: macrosResult.protein_g,
+      fatRange: macrosResult.fat_g,
+      carbsRange: macrosResult.carb_g,
+      caloriesRange: macrosResult.calories
     }
   }, [playerData, selectedPlan])
 
@@ -1240,9 +1222,11 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}
             >
               <option value="حارس مرمى">حارس مرمى</option>
-              <option value="مدافع">مدافع</option>
-              <option value="محور">محور</option>
-              <option value="مهاجم">مهاجم</option>
+              <option value="مدافع قلب">مدافع قلب</option>
+              <option value="مدافع ظهير">مدافع ظهير</option>
+              <option value="محور (دفاعي أو هجومي)">محور (دفاعي أو هجومي)</option>
+              <option value="مهاجم صريح/وهمي">مهاجم صريح/وهمي</option>
+              <option value="مهاجم جناح">مهاجم جناح</option>
             </select>
           </div>
 
@@ -1357,9 +1341,19 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}>
                 <h3 style={{ color: '#22c55e', marginBottom: '10px', fontSize: '0.9rem' }}>السعرات الحرارية</h3>
-                <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.calories} سعرة
+                                <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
+                  {nutritionPlan.baseCalories} سعرة
                 </p>
+                {selectedPlan !== 'maintain' && (
+                  <p style={{
+                    fontSize: '0.8rem',
+                    margin: '5px 0 0 0',
+                    color: selectedPlan === 'gain' ? '#22c55e' : '#ef4444',
+                    fontWeight: 'bold'
+                  }}>
+                    {selectedPlan === 'gain' ? '+' : '-'}{Math.abs(nutritionPlan.caloriesAdjustment)} من الكربوهيدرات
+                  </p>
+                )}
               </div>
 
               <div style={{
@@ -1370,9 +1364,19 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}>
                 <h3 style={{ color: '#3b82f6', marginBottom: '10px', fontSize: '0.9rem' }}>البروتين</h3>
-                <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.protein} جرام
+                                <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
+                  {nutritionPlan.proteinRange.min}-{nutritionPlan.proteinRange.max} جرام
                 </p>
+                {selectedPlan !== 'maintain' && (
+                  <p style={{
+                    fontSize: '0.8rem',
+                    margin: '5px 0 0 0',
+                    color: '#3b82f6',
+                    fontWeight: 'bold'
+                  }}>
+                    {selectedPlan === 'gain' ? '+' : '-'}{Math.abs(nutritionPlan.proteinRange.max - nutritionPlan.proteinRange.min)} من الكربوهيدرات
+                  </p>
+                )}
               </div>
 
               <div style={{
@@ -1384,8 +1388,18 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h3 style={{ color: '#f59e0b', marginBottom: '10px', fontSize: '0.9rem' }}>الكربوهيدرات</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.carbs} جرام
+                  {nutritionPlan.carbsRange.min}-{nutritionPlan.carbsRange.max} جرام
                 </p>
+                {selectedPlan !== 'maintain' && (
+                  <p style={{
+                    fontSize: '0.8rem',
+                    margin: '5px 0 0 0',
+                    color: '#f59e0b',
+                    fontWeight: 'bold'
+                  }}>
+                    {selectedPlan === 'gain' ? '+' : '-'}{Math.abs(nutritionPlan.carbsRange.max - nutritionPlan.carbsRange.min)} من الكربوهيدرات
+                  </p>
+                )}
               </div>
 
               <div style={{
@@ -1397,7 +1411,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
               }}>
                 <h3 style={{ color: '#ef4444', marginBottom: '10px', fontSize: '0.9rem' }}>الدهون</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
-                  {nutritionPlan.fat} جرام
+                  {nutritionPlan.fatRange.min}-{nutritionPlan.fatRange.max} جرام
                 </p>
               </div>
 
@@ -1424,6 +1438,81 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 <h3 style={{ color: '#8b5cf6', marginBottom: '10px', fontSize: '0.9rem' }}>الوزن المثالي</h3>
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
                   {nutritionPlan.idealWeight.min}-{nutritionPlan.idealWeight.max} كجم
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Plan Details */}
+        {showResults && (
+          <div style={{
+            background: 'white',
+            padding: '20px',
+            borderRadius: '15px',
+            marginBottom: '20px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ 
+              textAlign: 'center', 
+              marginBottom: '20px', 
+              color: '#1a472a', 
+              fontSize: '1.2rem',
+              borderBottom: '2px solid #e5e7eb',
+              paddingBottom: '10px'
+            }}>
+              تفاصيل الخطة: {selectedPlan === 'maintain' ? 'المحافظة على الوزن' : selectedPlan === 'gain' ? 'زيادة الوزن' : 'خسارة الوزن'}
+            </h3>
+            
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '15px'
+            }}>
+              <div style={{
+                background: '#f8fafc',
+                padding: '15px',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <h4 style={{ color: '#22c55e', marginBottom: '10px', fontSize: '1rem' }}>السعرات الأساسية</h4>
+                <p style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#1a472a', margin: '5px 0' }}>
+                  {nutritionPlan.baseCalories} سعرة
+                </p>
+                <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '5px 0' }}>
+                  السعرات المطلوبة للمحافظة
+                </p>
+              </div>
+
+              <div style={{
+                background: '#f8fafc',
+                padding: '15px',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <h4 style={{ color: '#3b82f6', marginBottom: '10px', fontSize: '1rem' }}>تعديل السعرات</h4>
+                <p style={{ 
+                  fontSize: '1.1rem', 
+                  fontWeight: 'bold', 
+                  color: nutritionPlan.caloriesAdjustment > 0 ? '#22c55e' : nutritionPlan.caloriesAdjustment < 0 ? '#ef4444' : '#1a472a',
+                  margin: '5px 0'
+                }}>
+                  {nutritionPlan.caloriesAdjustment > 0 ? '+' : ''}{nutritionPlan.caloriesAdjustment} سعرة
+                </p>
+                <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '5px 0' }}>
+                  {selectedPlan === 'maintain' ? 'لا يوجد تعديل' : selectedPlan === 'gain' ? 'زيادة من الكربوهيدرات' : 'خسارة من الكربوهيدرات'}
+                </p>
+              </div>
+
+              <div style={{
+                background: '#f8fafc',
+                padding: '15px',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <h4 style={{ color: '#f59e0b', marginBottom: '10px', fontSize: '1rem' }}>ملاحظات الخطة</h4>
+                <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '5px 0', lineHeight: '1.4' }}>
+                  {nutritionPlan.macrosDetail.notes}
                 </p>
               </div>
             </div>

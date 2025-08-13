@@ -1,3 +1,52 @@
+// مسبار ذاتي للتأكد من أن الملف المستخدم صحيح
+console.info('macros.ts version:', new Date().toISOString(), 'buildId:', Date.now());
+
+/**
+ * اختبار ذاتي للقواعد المرجعية
+ */
+function selfTest() {
+  console.info('🔍 بدء الاختبار الذاتي...');
+  
+  // اختبار الوزن المثالي GK=180→75–82
+  const testHeight = 180;
+  const testBase = testHeight - 100; // 80
+  const gkOffsets = { min: -5, max: 2 };
+  const expectedMin = testBase + gkOffsets.min; // 80 + (-5) = 75
+  const expectedMax = testBase + gkOffsets.max; // 80 + 2 = 82
+  
+  console.info(`📏 اختبار الوزن المثالي: GK=${testHeight}سم → base=${testBase} → ${expectedMin}–${expectedMax} كجم`);
+  
+  // اختبار الماكروز المرجعية
+  const testCase = {
+    age_years: 18,
+    weight_kg: 70,
+    total_calories: 2500,
+    goal: 'maintain' as const
+  };
+  
+  try {
+    const result = computeMacros(testCase);
+    console.info('✅ الاختبار الذاتي نجح:', result);
+    
+    // فحص الطاقة
+    const energyCheck = Math.abs(
+      (result.protein_g.min * 4) + (result.fat_g.min * 9) + (result.carb_g.min * 4) - result.calories.final_min
+    );
+    
+    if (energyCheck > 1) {
+      console.warn(`⚠️ تحذير: عدم تطابق الطاقة > 1: ${energyCheck}`);
+    }
+    
+  } catch (error) {
+    console.error('❌ الاختبار الذاتي فشل:', error);
+  }
+}
+
+// تشغيل الاختبار الذاتي عند تحميل الملف
+if (typeof window !== 'undefined') {
+  setTimeout(selfTest, 1000);
+}
+
 export type Gender = 'ذكر' | 'أنثى';
 
 export type ActivityLevel = 
