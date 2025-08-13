@@ -112,8 +112,8 @@ describe('Calories Calculator Tests', () => {
       });
       
       expect(result.isValid).toBe(true);
-      expect(result.bmr).toBeCloseTo(1735.22, 2);
-      expect(result.tdee).toBeCloseTo(2689.591, 2);
+      expect(result.bmr).toBe(1735); // Rounded output
+      expect(result.tdee).toBe(2690); // Rounded output
     });
 
     test('وزن منخفض جداً', () => {

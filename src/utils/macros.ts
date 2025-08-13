@@ -261,10 +261,10 @@ export function computeMacros(input: MacroInput): MacroOutput {
     delta_g_max = Math.round(deltaMax / CALORIES_PER_GRAM.CARBS);
     
     if (goal === 'bulk') {
-      note_text = `يزاد من الكربوهيدرات: ${delta_g_min}–${delta_g_max} غ/يوم`;
+      note_text = `يزاد من الكربوهيدرات: ${delta_g_min} إلى ${delta_g_max} غ/يوم`;
       note_color = 'green';
     } else { // cut
-      note_text = `ينقص من الكربوهيدرات: ${Math.abs(delta_g_max)}–${Math.abs(delta_g_min)} غ/يوم`;
+      note_text = `ينقص من الكربوهيدرات: ${Math.abs(delta_g_max)} إلى ${Math.abs(delta_g_min)} غ/يوم`;
       note_color = 'red';
     }
   }

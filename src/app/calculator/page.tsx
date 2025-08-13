@@ -1376,7 +1376,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}>
                 <h3 style={{ color: '#22c55e', marginBottom: '10px', fontSize: '0.9rem' }}>السعرات الحرارية</h3>
-                                <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
+                <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
                   {nutritionPlan.baseCalories} سعرة
                 </p>
                 {selectedPlan !== 'maintain' && (
@@ -1386,7 +1386,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                     color: selectedPlan === 'gain' ? '#22c55e' : '#ef4444',
                     fontWeight: 'bold'
                   }}>
-                    {selectedPlan === 'gain' ? '+' : '-'}{Math.abs(nutritionPlan.caloriesAdjustment)} من الكربوهيدرات
+                    {selectedPlan === 'gain' ? '+' : '-'}{Math.abs(nutritionPlan.macrosDetail.delta_display.text_min)} إلى {Math.abs(nutritionPlan.macrosDetail.delta_display.text_max)} من الكربوهيدرات
                   </p>
                 )}
               </div>
@@ -1402,16 +1402,6 @@ const Calculator = dynamic(() => Promise.resolve(() => {
                 <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 'bold', color: '#1a472a', margin: 0 }}>
                   {nutritionPlan.proteinRange.min}-{nutritionPlan.proteinRange.max} جرام
                 </p>
-                {selectedPlan !== 'maintain' && (
-                  <p style={{
-                    fontSize: '0.8rem',
-                    margin: '5px 0 0 0',
-                    color: '#3b82f6',
-                    fontWeight: 'bold'
-                  }}>
-                    {selectedPlan === 'gain' ? '+' : '-'}{Math.abs(nutritionPlan.proteinRange.max - nutritionPlan.proteinRange.min)} من الكربوهيدرات
-                  </p>
-                )}
               </div>
 
               <div style={{
