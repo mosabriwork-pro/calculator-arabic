@@ -283,7 +283,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
         delta_display: macrosResult.delta_display,
         notes: macrosResult.notes,
         carbs_maintain: macrosResult.carb_g,
-        carbs_display: macrosResult.carb_g
+        carbs_display: macrosResult.carbs_display
       },
       // Add ranges for display
       proteinRange: macrosResult.protein_g,
