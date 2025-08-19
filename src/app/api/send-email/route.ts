@@ -464,7 +464,7 @@ export async function POST(request: NextRequest) {
             margin: 20px 0;
             line-height: 1.6;
           ">
-            هذا الرمز صالح للاستخدام مرة واحدة فقط
+            هذا الرمز صالح للاستخدام لمدة سنة
           </p>
         </div>
 
@@ -489,139 +489,129 @@ export async function POST(request: NextRequest) {
             margin: 0 auto;
             padding: 0 20px;
           ">
-            <ol style="
-              list-style: none;
-              counter-reset: step-counter;
-              padding: 0;
+            <div style="
+              margin: 15px 0;
+              padding: 15px;
+              background: rgba(139,92,246,0.1);
+              border-radius: 10px;
+              border-right: 4px solid #8b5cf6;
+              position: relative;
             ">
-              <li style="
-                counter-increment: step-counter;
-                margin: 15px 0;
-                padding: 15px;
-                background: rgba(139,92,246,0.1);
-                border-radius: 10px;
-                border-right: 4px solid #8b5cf6;
-                position: relative;
-              ">
-                <span style="
-                  position: absolute;
-                  right: -15px;
-                  top: 50%;
-                  transform: translateY(-50%);
-                  background: #8b5cf6;
-                  color: white;
-                  width: 30px;
-                  height: 30px;
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-weight: bold;
-                  font-size: 1.1rem;
-                ">::before { counter(step-counter) }</span>
-                <span style="
-                  margin-right: 40px;
-                  font-size: 1.1rem;
-                  color: #e5e7eb;
-                ">اذهب إلى صفحة تسجيل الدخول</span>
-              </li>
-              
-              <li style="
-                counter-increment: step-counter;
-                margin: 15px 0;
-                padding: 15px;
-                background: rgba(139,92,246,0.1);
-                border-radius: 10px;
-                border-right: 4px solid #8b5cf6;
-                position: relative;
-              ">
-                <span style="
-                  position: absolute;
-                  right: -15px;
-                  top: 50%;
-                  transform: translateY(-50%);
-                  background: #8b5cf6;
-                  color: white;
-                  width: 30px;
-                  height: 30px;
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-weight: bold;
-                  font-size: 1.1rem;
-                ">::before { counter(step-counter) }</span>
-                <span style="
-                  margin-right: 40px;
-                  font-size: 1.1rem;
-                  color: #e5e7eb;
-                ">أدخل بريدك الإلكتروني</span>
-              </li>
-              
-              <li style="
-                counter-increment: step-counter;
-                margin: 15px 0;
-                padding: 15px;
-                background: rgba(139,92,246,0.1);
-                border-radius: 10px;
-                border-right: 4px solid #8b5cf6;
-                position: relative;
-              ">
-                <span style="
-                  position: absolute;
-                  right: -15px;
-                  top: 50%;
-                  transform: translateY(-50%);
-                  background: #8b5cf6;
-                  color: white;
-                  width: 30px;
-                  height: 30px;
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-weight: bold;
-                  font-size: 1.1rem;
-                ">::before { counter(step-counter) }</span>
-                <span style="
-                  margin-right: 40px;
-                  font-size: 1.1rem;
-                  color: #e5e7eb;
-                ">أدخل رمز الوصول أعلاه</span>
-              </li>
-              
-              <li style="
-                counter-increment: step-counter;
-                margin: 15px 0;
-                padding: 15px;
-                background: rgba(139,92,246,0.1);
-                border-radius: 10px;
-                border-right: 4px solid #8b5cf6;
-                position: relative;
-              ">
-                <span style="
-                  position: absolute;
-                  right: -15px;
-                  top: 50%;
-                  transform: translateY(-50%);
-                  background: #8b5cf6;
-                  color: white;
-                  width: 30px;
-                  height: 30px;
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-weight: bold;
-                  font-size: 1.1rem;
-                ">::before { counter(step-counter) }</span>
-                <span style="
-                  margin-right: 40px;
-                  font-size: 1.1rem;
-                  color: #e5e7eb;
-                ">اضغط "تسجيل الدخول"</span>
-              </li>
-            </ol>
+              <span style="
+                position: absolute;
+                right: -15px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: #8b5cf6;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 1.1rem;
+              ">1</span>
+              <span style="
+                margin-right: 40px;
+                font-size: 1.1rem;
+                color: #e5e7eb;
+              ">اذهب إلى صفحة تسجيل الدخول</span>
+            </div>
+            
+            <div style="
+              margin: 15px 0;
+              padding: 15px;
+              background: rgba(139,92,246,0.1);
+              border-radius: 10px;
+              border-right: 4px solid #8b5cf6;
+              position: relative;
+            ">
+              <span style="
+                position: absolute;
+                right: -15px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: #8b5cf6;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 1.1rem;
+              ">2</span>
+              <span style="
+                margin-right: 40px;
+                font-size: 1.1rem;
+                color: #e5e7eb;
+              ">أدخل بريدك الإلكتروني</span>
+            </div>
+            
+            <div style="
+              margin: 15px 0;
+              padding: 15px;
+              background: rgba(139,92,246,0.1);
+              border-radius: 10px;
+              border-right: 4px solid #8b5cf6;
+              position: relative;
+            ">
+              <span style="
+                position: absolute;
+                right: -15px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: #8b5cf6;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 1.1rem;
+              ">3</span>
+              <span style="
+                margin-right: 40px;
+                font-size: 1.1rem;
+                color: #e5e7eb;
+              ">أدخل رمز الوصول أعلاه</span>
+            </div>
+            
+            <div style="
+              margin: 15px 0;
+              padding: 15px;
+              background: rgba(139,92,246,0.1);
+              border-radius: 10px;
+              border-right: 4px solid #8b5cf6;
+              position: relative;
+            ">
+              <span style="
+                position: absolute;
+                right: -15px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: #8b5cf6;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 1.1rem;
+              ">4</span>
+              <span style="
+                margin-right: 40px;
+                font-size: 1.1rem;
+                color: #e5e7eb;
+              ">اضغط "تسجيل الدخول"</span>
+            </div>
           </div>
         </div>
 
@@ -660,7 +650,7 @@ export async function POST(request: NextRequest) {
               background: rgba(239,68,68,0.1);
               border-radius: 8px;
               border-right: 3px solid #ef4444;
-            ">⏰ الرمز صالح لمدة 10 دقائق فقط</li>
+            ">⏰ الرمز صالح لمدة سنة من تاريخ الاشتراك</li>
             <li style="
               margin: 10px 0;
               padding: 10px;
@@ -669,6 +659,153 @@ export async function POST(request: NextRequest) {
               border-right: 3px solid #ef4444;
             ">📱 إذا لم تطلب هذا الرمز، تجاهل هذا البريد</li>
           </ul>
+        </div>
+
+        <!-- Features Section -->
+        <div style="
+          background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%);
+          padding: 40px 20px;
+          border-bottom: 3px solid rgba(16,185,129,0.3);
+        ">
+          <h3 style="
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 0 25px 0;
+            color: #10b981;
+          ">
+            مميزات الحاسبة
+          </h3>
+          
+          <div style="
+            text-align: right;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 20px;
+          ">
+            <div style="
+              margin: 15px 0;
+              padding: 15px;
+              background: rgba(16,185,129,0.1);
+              border-radius: 10px;
+              border-right: 4px solid #10b981;
+              position: relative;
+            ">
+              <span style="
+                position: absolute;
+                right: -15px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: #10b981;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 1.1rem;
+              ">✓</span>
+              <span style="
+                margin-right: 40px;
+                font-size: 1.1rem;
+                color: #e5e7eb;
+              ">حسابات دقيقة بناءً على مواصفاتك الرياضية</span>
+            </div>
+            
+            <div style="
+              margin: 15px 0;
+              padding: 15px;
+              background: rgba(16,185,129,0.1);
+              border-radius: 10px;
+              border-right: 4px solid #10b981;
+              position: relative;
+            ">
+              <span style="
+                position: absolute;
+                right: -15px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: #10b981;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 1.1rem;
+              ">✓</span>
+              <span style="
+                margin-right: 40px;
+                font-size: 1.1rem;
+                color: #e5e7eb;
+              ">خطط غذائية مخصصة لثلاثة أهداف مختلفة</span>
+            </div>
+            
+            <div style="
+              margin: 15px 0;
+              padding: 15px;
+              background: rgba(16,185,129,0.1);
+              border-radius: 10px;
+              border-right: 4px solid #10b981;
+              position: relative;
+            ">
+              <span style="
+                position: absolute;
+                right: -15px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: #10b981;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 1.1rem;
+              ">✓</span>
+              <span style="
+                margin-right: 40px;
+                font-size: 1.1rem;
+                color: #e5e7eb;
+              ">توصيات خاصة</span>
+            </div>
+            
+            <div style="
+              margin: 15px 0;
+              padding: 15px;
+              background: rgba(16,185,129,0.1);
+              border-radius: 10px;
+              border-right: 4px solid #10b981;
+              position: relative;
+            ">
+              <span style="
+                position: absolute;
+                right: -15px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: #10b981;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 1.1rem;
+              ">✓</span>
+              <span style="
+                margin-right: 40px;
+                font-size: 1.1rem;
+                color: #e5e7eb;
+              ">تقرير PDF شامل ومفصل</span>
+            </div>
+          </div>
         </div>
 
         <!-- Footer -->
