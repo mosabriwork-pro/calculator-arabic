@@ -151,7 +151,7 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
   const EMAIL_USER = process.env.EMAIL_USER
   const EMAIL_PASS = process.env.EMAIL_PASS
 
-  console.log('Email Configuration Check:')
+  console.log('🔍 Email Configuration Check:')
   console.log('- EMAIL_USER:', EMAIL_USER ? `${EMAIL_USER.substring(0, 3)}***@${EMAIL_USER.split('@')[1]}` : 'NOT_SET')
   console.log('- EMAIL_PASS:', EMAIL_PASS ? `${EMAIL_PASS.substring(0, 3)}***` : 'NOT_SET')
 
@@ -161,30 +161,42 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
 
   console.log('✅ Using email configuration (with fallback if needed)')
 
-  // Create new transporter with optimized settings
-  transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: FALLBACK_EMAIL_USER,
-      pass: FALLBACK_EMAIL_PASS
-    },
-    pool: true, // Enable connection pooling
-    maxConnections: 5, // Limit concurrent connections
-    maxMessages: 100, // Messages per connection
-    rateLimit: 10, // Messages per second
-    socketTimeout: 30000, // 30 seconds
-    connectionTimeout: 30000, // 30 seconds
-    greetingTimeout: 30000, // 30 seconds
-    debug: true, // Enable debug for troubleshooting
-    logger: true // Enable logger for troubleshooting
-  })
-
-  // Verify connection
   try {
+    // Create new transporter with improved settings
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: FALLBACK_EMAIL_USER,
+        pass: FALLBACK_EMAIL_PASS
+      },
+      // Improved SMTP settings
+      secure: false, // Use TLS
+      port: 587, // Standard SMTP port
+      tls: {
+        rejectUnauthorized: false, // Allow self-signed certificates
+        ciphers: 'SSLv3'
+      },
+      // Connection settings
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+      rateLimit: 10,
+      socketTimeout: 30000,
+      connectionTimeout: 30000,
+      greetingTimeout: 30000,
+      // Debug settings
+      debug: process.env.NODE_ENV === 'development',
+      logger: process.env.NODE_ENV === 'development'
+    })
+
+    // Verify connection
     console.log('🔍 Verifying SMTP connection...')
     await transporter.verify()
     console.log('✅ SMTP connection verified successfully')
+    
     lastTransporterCheck = now
+    return transporter
+
   } catch (error: any) {
     console.error('❌ SMTP verification failed:')
     console.error('- Error Code:', error.code)
@@ -206,8 +218,6 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
       throw new Error(`SMTP Error (${error.code}): ${error.message}`)
     }
   }
-
-  return transporter
 }
 
 // Rate limiting function
@@ -293,45 +303,60 @@ async function sendWithRetry(
   maxAttempts = 3
 ): Promise<nodemailer.SentMessageInfo> {
   let lastError: any
+  
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const info = await trans.sendMail(options)
-      return info
-    } catch (err: any) {
-      lastError = err
-      console.error(`sendMail attempt ${attempt} failed:`, err?.code || err?.message)
+      console.log(`📤 Attempt ${attempt}/${maxAttempts} to send email to ${options.to}`)
+      
+      const result = await trans.sendMail(options)
+      
+      console.log(`✅ Email sent successfully on attempt ${attempt}!`)
+      console.log(`📨 Message ID: ${result.messageId}`)
+      console.log(`📧 To: ${options.to}`)
+      console.log(`📤 From: ${options.from}`)
+      
+      return result
+      
+    } catch (error: any) {
+      lastError = error
+      console.error(`❌ Attempt ${attempt} failed:`)
+      console.error(`- Error Code: ${error.code}`)
+      console.error(`- Error Message: ${error.message}`)
+      
       if (attempt < maxAttempts) {
-        const backoffMs = 1000 * Math.pow(2, attempt) // 2s, 4s
-        await new Promise(res => setTimeout(res, backoffMs))
-        continue
+        const delay = Math.pow(2, attempt) * 1000 // Exponential backoff
+        console.log(`⏳ Waiting ${delay}ms before retry...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
   }
-  throw lastError
+  
+  // All attempts failed
+  console.error(`❌ All ${maxAttempts} attempts failed for ${options.to}`)
+  console.error(`- Final Error Code: ${lastError.code}`)
+  console.error(`- Final Error Message: ${lastError.message}`)
+  
+  throw new Error(`Failed to send email after ${maxAttempts} attempts. Last error: ${lastError.message}`)
 }
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
+  let email: string = ''
   
   try {
-    console.log('📧 Starting email sending process...')
-    
-    const { email } = await request.json()
+    const { email: requestEmail } = await request.json()
+    email = requestEmail
     
     if (!email) {
-      console.log('❌ Email is required')
       return NextResponse.json({ 
         success: false, 
         error: 'البريد الإلكتروني مطلوب' 
       }, { status: 400 })
     }
 
-    console.log(`📧 Processing email request for: ${email}`)
-
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      console.log('❌ Invalid email format')
       return NextResponse.json({ 
         success: false, 
         error: 'صيغة البريد الإلكتروني غير صحيحة' 
@@ -343,11 +368,10 @@ export async function POST(request: NextRequest) {
                request.headers.get('x-real-ip') || 
                'unknown'
     
-    console.log(`📧 Email request from IP: ${ip}`)
+    console.log(`📧 Email request from IP: ${ip} to: ${email}`)
 
     // Check rate limit
     if (!checkRateLimit(ip)) {
-      console.log('❌ Rate limit exceeded')
       return NextResponse.json({ 
         success: false, 
         error: 'تم تجاوز الحد المسموح. يرجى الانتظار دقيقة واحدة قبل المحاولة مرة أخرى' 
@@ -356,14 +380,14 @@ export async function POST(request: NextRequest) {
 
     // Generate access code
     const accessCode = generateAccessCode(email)
-    console.log(`🔐 Generated access code: ${accessCode}`)
+    console.log(`🔐 Generated access code for ${email}: ${accessCode}`)
 
     // Get transporter
-    console.log('🔧 Getting email transporter...')
-    const trans = await getTransporter()
+    console.log('🔍 Getting SMTP transporter...')
+    const transporter = await getTransporter()
+    console.log('✅ SMTP transporter ready')
 
     // Prepare email content
-    console.log('📝 Preparing email content...')
     const emailContent = `
       <div style="
         background: linear-gradient(135deg, #1a472a 0%, #0f2e1a 50%, #0a1f12 100%);
@@ -433,6 +457,15 @@ export async function POST(request: NextRequest) {
           ">
             ${accessCode}
           </div>
+          
+          <p style="
+            font-size: 1.1rem;
+            color: #d1d5db;
+            margin: 20px 0;
+            line-height: 1.6;
+          ">
+            هذا الرمز صالح للاستخدام مرة واحدة فقط
+          </p>
         </div>
 
         <!-- Instructions Section -->
@@ -442,308 +475,286 @@ export async function POST(request: NextRequest) {
           border-bottom: 3px solid rgba(139,92,246,0.3);
         ">
           <h3 style="
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: bold;
             margin: 0 0 25px 0;
             color: #8b5cf6;
           ">
-            تعليمات الدخول:
+            كيفية الاستخدام
           </h3>
           
           <div style="
             text-align: right;
-            font-size: 1.1rem;
-            line-height: 2;
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
+            padding: 0 20px;
           ">
-            <div style="margin-bottom: 15px;">
-              <span style="font-size: 1.3rem; margin-left: 10px;">1️⃣</span>
-              انتقل إلى 
-              <a href="https://mosabri.top/login" style="
-                color: #22c55e;
-                text-decoration: none;
-                font-weight: bold;
-                background: rgba(34,197,94,0.1);
-                padding: 5px 10px;
-                border-radius: 5px;
-              ">صفحة تسجيل الدخول</a>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-              <span style="font-size: 1.3rem; margin-left: 10px;">2️⃣</span>
-              أدخل بريدك المسجَّل: 
-              <strong style="color: #fbbf24;">${email}</strong>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-              <span style="font-size: 1.3rem; margin-left: 10px;">3️⃣</span>
-              أدخل رمز التفعيل الخاص بك: 
-              <strong style="color: #fbbf24; font-size: 1.2rem;">${accessCode}</strong>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-              <span style="font-size: 1.3rem; margin-left: 10px;">4️⃣</span>
-              اضغط «تسجيل الدخول» واستمتع بخطتك المخصَّصة في أقل من دقيقتين!
-            </div>
+            <ol style="
+              list-style: none;
+              counter-reset: step-counter;
+              padding: 0;
+            ">
+              <li style="
+                counter-increment: step-counter;
+                margin: 15px 0;
+                padding: 15px;
+                background: rgba(139,92,246,0.1);
+                border-radius: 10px;
+                border-right: 4px solid #8b5cf6;
+                position: relative;
+              ">
+                <span style="
+                  position: absolute;
+                  right: -15px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  background: #8b5cf6;
+                  color: white;
+                  width: 30px;
+                  height: 30px;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: bold;
+                  font-size: 1.1rem;
+                ">::before { counter(step-counter) }</span>
+                <span style="
+                  margin-right: 40px;
+                  font-size: 1.1rem;
+                  color: #e5e7eb;
+                ">اذهب إلى صفحة تسجيل الدخول</span>
+              </li>
+              
+              <li style="
+                counter-increment: step-counter;
+                margin: 15px 0;
+                padding: 15px;
+                background: rgba(139,92,246,0.1);
+                border-radius: 10px;
+                border-right: 4px solid #8b5cf6;
+                position: relative;
+              ">
+                <span style="
+                  position: absolute;
+                  right: -15px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  background: #8b5cf6;
+                  color: white;
+                  width: 30px;
+                  height: 30px;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: bold;
+                  font-size: 1.1rem;
+                ">::before { counter(step-counter) }</span>
+                <span style="
+                  margin-right: 40px;
+                  font-size: 1.1rem;
+                  color: #e5e7eb;
+                ">أدخل بريدك الإلكتروني</span>
+              </li>
+              
+              <li style="
+                counter-increment: step-counter;
+                margin: 15px 0;
+                padding: 15px;
+                background: rgba(139,92,246,0.1);
+                border-radius: 10px;
+                border-right: 4px solid #8b5cf6;
+                position: relative;
+              ">
+                <span style="
+                  position: absolute;
+                  right: -15px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  background: #8b5cf6;
+                  color: white;
+                  width: 30px;
+                  height: 30px;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: bold;
+                  font-size: 1.1rem;
+                ">::before { counter(step-counter) }</span>
+                <span style="
+                  margin-right: 40px;
+                  font-size: 1.1rem;
+                  color: #e5e7eb;
+                ">أدخل رمز الوصول أعلاه</span>
+              </li>
+              
+              <li style="
+                counter-increment: step-counter;
+                margin: 15px 0;
+                padding: 15px;
+                background: rgba(139,92,246,0.1);
+                border-radius: 10px;
+                border-right: 4px solid #8b5cf6;
+                position: relative;
+              ">
+                <span style="
+                  position: absolute;
+                  right: -15px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  background: #8b5cf6;
+                  color: white;
+                  width: 30px;
+                  height: 30px;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: bold;
+                  font-size: 1.1rem;
+                ">::before { counter(step-counter) }</span>
+                <span style="
+                  margin-right: 40px;
+                  font-size: 1.1rem;
+                  color: #e5e7eb;
+                ">اضغط "تسجيل الدخول"</span>
+              </li>
+            </ol>
           </div>
         </div>
 
-        <!-- Features Section -->
+        <!-- Security Notice -->
         <div style="
           background: linear-gradient(135deg, rgba(239,68,68,0.2) 0%, rgba(220,38,38,0.2) 100%);
-          padding: 40px 20px;
+          padding: 30px 20px;
           border-bottom: 3px solid rgba(239,68,68,0.3);
         ">
           <h3 style="
-            font-size: 1.6rem;
+            font-size: 1.3rem;
             font-weight: bold;
-            margin: 0 0 25px 0;
+            margin: 0 0 20px 0;
             color: #ef4444;
           ">
-            لماذا حاسبة موصبري؟ 🔥
+            ⚠️ ملاحظات أمنية مهمة
           </h3>
           
-          <div style="
+          <ul style="
             text-align: right;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
+            padding: 0 20px;
+            list-style: none;
           ">
-            <div style="
-              background: rgba(255,255,255,0.1);
-              padding: 15px;
-              border-radius: 10px;
-              margin-bottom: 15px;
-              border-right: 4px solid #22c55e;
-            ">
-              <strong style="color: #22c55e;">🎯 دقة علمية</strong> مبنية على مركزك في الملعب وحجم نشاطك
-            </div>
-            
-            <div style="
-              background: rgba(255,255,255,0.1);
-              padding: 15px;
-              border-radius: 10px;
-              margin-bottom: 15px;
-              border-right: 4px solid #3b82f6;
-            ">
-              <strong style="color: #3b82f6;">📊 مخطط سعرات وماكروز</strong> متكيِّف لحظياً مع تعديلات بياناتك
-            </div>
-            
-            <div style="
-              background: rgba(255,255,255,0.1);
-              padding: 15px;
-              border-radius: 10px;
-              margin-bottom: 15px;
-              border-right: 4px solid #8b5cf6;
-            ">
-              <strong style="color: #8b5cf6;">🍎 توصيات غذائية</strong> خاصة
-            </div>
-            
-            <div style="
-              background: rgba(255,255,255,0.1);
-              padding: 15px;
-              border-radius: 10px;
-              margin-bottom: 15px;
-              border-right: 4px solid #fbbf24;
-            ">
-              <strong style="color: #fbbf24;">📋 تقرير شامل ومفصّل</strong> من 7 صفحات جاهز للطباعة
-            </div>
-            
-            <div style="
-              background: rgba(255,255,255,0.1);
-              padding: 15px;
-              border-radius: 10px;
-              margin-bottom: 15px;
-              border-right: 4px solid #ef4444;
-            ">
-              <strong style="color: #ef4444;">🔄 تحديثات مدى الحياة</strong> مجاناً — ابقَ على المسار الصحيح دائماً
-            </div>
-          </div>
+            <li style="
+              margin: 10px 0;
+              padding: 10px;
+              background: rgba(239,68,68,0.1);
+              border-radius: 8px;
+              border-right: 3px solid #ef4444;
+            ">🔒 لا تشارك هذا الرمز مع أي شخص</li>
+            <li style="
+              margin: 10px 0;
+              padding: 10px;
+              background: rgba(239,68,68,0.1);
+              border-radius: 8px;
+              border-right: 3px solid #ef4444;
+            ">⏰ الرمز صالح لمدة 10 دقائق فقط</li>
+            <li style="
+              margin: 10px 0;
+              padding: 10px;
+              background: rgba(239,68,68,0.1);
+              border-radius: 8px;
+              border-right: 3px solid #ef4444;
+            ">📱 إذا لم تطلب هذا الرمز، تجاهل هذا البريد</li>
+          </ul>
         </div>
 
-        <!-- Contact Section -->
+        <!-- Footer -->
         <div style="
-          background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%);
-          padding: 40px 20px;
-          border-bottom: 3px solid rgba(16,185,129,0.3);
-        ">
-          <h3 style="
-            font-size: 1.6rem;
-            font-weight: bold;
-            margin: 0 0 25px 0;
-            color: #10b981;
-          ">
-            عندك سؤال؟
-          </h3>
-          
-          <div style="
-            text-align: center;
-            font-size: 1.1rem;
-            line-height: 1.8;
-          ">
-            <div style="margin-bottom: 15px;">
-              <strong style="color: #10b981;">📧</strong>
-              تواصل معنا مباشرة: 
-              <a href="mailto:mosabrihelp@gmail.com" style="
-                color: #10b981;
-                text-decoration: none;
-                font-weight: bold;
-              ">mosabrihelp@gmail.com</a>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-              <strong style="color: #10b981;">📱</strong>
-              واتساب خدمة العملاء: 
-              <a href="https://wa.me/966571483853" style="
-                color: #10b981;
-                text-decoration: none;
-                font-weight: bold;
-              ">+966571483853</a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer Section -->
-        <div style="
-          background: rgba(0,0,0,0.3);
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
           padding: 30px 20px;
-          border-top: 1px solid rgba(255,255,255,0.1);
+          text-align: center;
         ">
-          <div style="
+          <p style="
+            color: #64748b;
             font-size: 0.9rem;
-            color: #9ca3af;
-            line-height: 1.6;
-            max-width: 500px;
-            margin: 0 auto;
+            margin: 0;
+            line-height: 1.5;
           ">
-            <p style="margin-bottom: 15px;">
-              إذا لم تطلب هذا البريد فتجاهله أو أخبرنا، ولن يتم تفعيل أي حساب بدون رمزك الخاص.
-            </p>
-            
-            <div style="
-              border-top: 1px solid rgba(255,255,255,0.1);
-              padding-top: 15px;
-              font-size: 0.8rem;
-            ">
-              © 2025 ‎Mosabri Pro – جميع الحقوق محفوظة | 
-              <a href="#" style="color: #9ca3af; text-decoration: none;">إلغاء الاشتراك</a> | 
-              <a href="#" style="color: #9ca3af; text-decoration: none;">سياسة الخصوصية</a>
-            </div>
-          </div>
+            تم إنشاء هذا البريد الإلكتروني بواسطة نظام موصبري برو للتغذية الرياضية
+          </p>
+          <p style="
+            color: #475569;
+            font-size: 0.8rem;
+            margin: 10px 0 0 0;
+          ">
+            © ${new Date().getFullYear()} موصبري برو. جميع الحقوق محفوظة.
+          </p>
         </div>
       </div>
     `
 
-    const textContent = `موصبري برو - رمز الوصول الى الآلة\n\nمرحبا،\nهذا هو رمز الوصول الخاص بك: ${accessCode}\n\nخطوات الاستخدام:\n1) ادخل إلى صفحة تسجيل الدخول: https://mosabri.top/login\n2) اكتب بريدك: ${email}\n3) أدخل الرمز: ${accessCode}\n\nإن لم تطلب هذا البريد فتجاهله.`
-
-    const mailOptions: nodemailer.SendMailOptions = {
-      from: `"حاسبة موصبري" <${process.env.EMAIL_USER || 'mosabrihelp@gmail.com'}>`,
+    // Send email with retry
+    console.log('📤 Sending email...')
+    const info = await sendWithRetry(transporter, {
+      from: `"موصبري برو" <${(transporter.options as any).auth?.user}>`,
       to: email,
-      subject: 'موصبري برو - رمز الوصول الى الآلة',
+      subject: '🔐 رمز الوصول - حاسبة موصبري برو',
       html: emailContent,
-      text: textContent,
-      replyTo: process.env.EMAIL_USER || 'mosabrihelp@gmail.com',
-      headers: {
-        'List-Unsubscribe': '<mailto:mosabrihelp@gmail.com?subject=unsubscribe>',
-        'X-Priority': '1 (Highest)',
-        'X-MSMail-Priority': 'High',
-        Importance: 'High'
-      },
-      priority: 'high' as const
-    }
-
-    console.log('📤 Mail options:', {
-      from: mailOptions.from,
-      to: mailOptions.to,
-      subject: mailOptions.subject
-    })
-
-    // فعلياً: أرسل البريد مع إعادة المحاولة
-    try {
-      const info = await sendWithRetry(trans, mailOptions, 3)
-      console.log('✅ Email delivered (SMTP)')
-      console.log('✉️ messageId:', info?.messageId, '| response:', info?.response)
-      appendEmailRecord({ email, status: 'success', message: `messageId=${info?.messageId} response=${info?.response}` })
-    } catch (sendErr: any) {
-      console.error('❌ Final email send failure:', sendErr?.code || sendErr?.message)
-      appendEmailRecord({ email, status: 'failed', message: sendErr?.message })
-      throw sendErr
-    }
-
-    // بعد نجاح الإرسال: سجل العميل وفعّل الاشتراك
-    const today = new Date()
-
-    const convertToArabicNumbers = (num: number): string => {
-      const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
-      return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('')
-    }
-
-    const month = today.getMonth() + 1
-    const day = today.getDate()
-    const year = today.getFullYear()
-    const subscriptionStart = `${convertToArabicNumbers(day).padStart(2, '٠')}/${convertToArabicNumbers(month).padStart(2, '٠')}/${convertToArabicNumbers(year)}`
-
-    const subscriptionEnd = new Date(today)
-    subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1)
-    const endMonth = subscriptionEnd.getMonth() + 1
-    const endDay = subscriptionEnd.getDate()
-    const endYear = subscriptionEnd.getFullYear()
-    const subscriptionEndFormatted = `${convertToArabicNumbers(endDay).padStart(2, '٠')}/${convertToArabicNumbers(endMonth).padStart(2, '٠')}/${convertToArabicNumbers(endYear)}`
-
-    saveCustomer(email, {
-      lastActivity: new Date().toLocaleString('ar-SA'),
-      lastUpdated: new Date().toISOString(),
-      accessCodeSent: true,
-      accessCode: accessCode,
-      email,
-      subscriptionStart: subscriptionStart,
-      subscriptionEnd: subscriptionEndFormatted,
-      isExpired: false
+      priority: 'high'
     })
 
     const duration = Date.now() - startTime
+    
     console.log(`✅ Email sent successfully to ${email} in ${duration}ms`)
+    console.log(`📨 Message ID: ${info.messageId}`)
+    console.log(`📧 From: ${(transporter.options as any).auth?.user}`)
+    console.log(`📤 To: ${email}`)
+
+    // Save customer data
+    saveCustomer(email, accessCode)
 
     return NextResponse.json({
       success: true,
-      message: 'تم إرسال رمز الوصول إلى بريدك بنجاح',
+      message: `تم إرسال رمز الوصول بنجاح إلى ${email}`,
       accessCode,
+      email,
+      messageId: info.messageId,
       duration
     })
 
   } catch (error: any) {
     const duration = Date.now() - startTime
-    console.error('❌ Email sending error:')
-    console.error('- Error Type:', error.constructor.name)
-    console.error('- Error Message:', error.message)
-    console.error('- Error Code:', error.code)
-    console.error('- Error Stack:', error.stack)
-    console.error('- Full Error Object:', JSON.stringify(error, null, 2))
     
-    // Provide more specific error messages
-    let errorMessage = 'حدث خطأ في إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى'
-    let errorDetails = error.message
-    
-    if (error.message.includes('Email configuration missing')) {
-      errorMessage = 'خطأ في إعدادات البريد الإلكتروني: يرجى التحقق من متغيرات البيئة EMAIL_USER و EMAIL_PASS'
-    } else if (error.message.includes('Authentication failed') || error.code === 'EAUTH') {
-      errorMessage = 'خطأ في مصادقة البريد الإلكتروني: يرجى التحقق من اسم المستخدم وكلمة المرور. تأكد من تفعيل كلمة مرور التطبيق إذا كان التحقق بخطوتين مفعل.'
-    } else if (error.message.includes('Connection failed') || error.code === 'ECONNECTION') {
-      errorMessage = 'خطأ في الاتصال بخادم البريد الإلكتروني: يرجى التحقق من إعدادات Gmail والاتصال بالإنترنت'
-    } else if (error.message.includes('SMTP Error')) {
-      errorMessage = `خطأ في خادم البريد الإلكتروني: ${error.message}`
+    console.error(`❌ Email sending error for ${email || 'unknown'}:`)
+    console.error(`- Error Code: ${error.code || 'UNKNOWN'}`)
+    console.error(`- Error Message: ${error.message}`)
+    console.error(`- Duration: ${duration}ms`)
+    console.error(`- Full Error:`, error)
+
+    // Return appropriate error response
+    if (error.code === 'EAUTH') {
+      return NextResponse.json({
+        success: false,
+        error: 'خطأ في مصادقة البريد الإلكتروني. يرجى التحقق من إعدادات الخادم.'
+      }, { status: 500 })
+    } else if (error.code === 'ECONNECTION') {
+      return NextResponse.json({
+        success: false,
+        error: 'خطأ في الاتصال. يرجى المحاولة مرة أخرى لاحقاً.'
+      }, { status: 500 })
     } else if (error.code === 'ETIMEDOUT') {
-      errorMessage = 'انتهت مهلة الاتصال: يرجى التحقق من الاتصال بالإنترنت وإعدادات Gmail'
+      return NextResponse.json({
+        success: false,
+        error: 'انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى.'
+      }, { status: 500 })
+    } else {
+      return NextResponse.json({
+        success: false,
+        error: `خطأ في إرسال البريد الإلكتروني: ${error.message}`
+      }, { status: 500 })
     }
-    
-    return NextResponse.json({
-      success: false,
-      error: errorMessage,
-      duration,
-      details: errorDetails,
-      errorCode: error.code
-    }, { status: 500 })
   }
 } 

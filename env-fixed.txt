@@ -1,0 +1,20 @@
+# إعدادات البريد الإلكتروني المحدثة - انسخ هذا الملف إلى .env.local
+
+# Email Configuration - Gmail App Password
+EMAIL_USER=mosabrihelp@gmail.com
+EMAIL_PASS=wukm xbaz eszx qetb
+
+# App Configuration
+APP_SECRET=mosabri-calculator-secret-key-2024
+ADMIN_PASSWORD=admin123
+
+# Environment
+NODE_ENV=development
+PORT=3002
+NEXT_PUBLIC_DOMAIN=localhost:3002
+
+# ملاحظات مهمة:
+# 1. تأكد من تفعيل "التحقق بخطوتين" في Gmail
+# 2. استخدم "كلمة مرور التطبيقات" وليس كلمة المرور العادية
+# 3. إذا لم تعمل هذه الإعدادات، جرب إنشاء كلمة مرور تطبيق جديدة
+# 4. تأكد من عدم وجود مسافات إضافية في كلمة المرور
