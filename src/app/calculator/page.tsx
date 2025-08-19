@@ -324,12 +324,27 @@ const Calculator = dynamic(() => Promise.resolve(() => {
       const { calculateBMR, calculateTDEE } = require('../../utils/calories')
       const { computeMacros } = require('../../utils/macros')
     
+    // Use inputValues for real-time calculations, fallback to playerData if inputValues are empty
+    const currentAge = inputValues.age !== '' ? Number(inputValues.age) : playerData.age
+    const currentWeight = inputValues.weight !== '' ? Number(inputValues.weight) : playerData.weight
+    const currentHeight = inputValues.height !== '' ? Number(inputValues.height) : playerData.height
+    
+    // Validate input values before calculation
+    if (isNaN(currentAge) || isNaN(currentWeight) || isNaN(currentHeight)) {
+      throw new Error('Invalid input values')
+    }
+    
+    // Show results automatically when we have valid input values
+    if (currentAge >= 9 && currentWeight >= 20 && currentHeight >= 140) {
+      setShowResults(true)
+    }
+    
     // Calculate BMR using the correct formula
     const bmr = calculateBMR({
       gender: playerData.gender,
-      weightKg: playerData.weight,
-      heightCm: playerData.height,
-      ageYears: playerData.age
+      weightKg: currentWeight,
+      heightCm: currentHeight,
+      ageYears: currentAge
     })
     
     // Activity multipliers (using the correct values from our utils)
@@ -353,8 +368,8 @@ const Calculator = dynamic(() => Promise.resolve(() => {
     
     // Use the correct macros calculation
     const macrosResult = computeMacros({
-      age_years: playerData.age,
-      weight_kg: playerData.weight,
+      age_years: currentAge,
+      weight_kg: currentWeight,
       total_calories: Math.round(tdee),
       goal: planMap[selectedPlan]
     })
@@ -362,10 +377,10 @@ const Calculator = dynamic(() => Promise.resolve(() => {
 
     
     // Water calculation (4% of body weight)
-    const water = Math.round(playerData.weight * 0.04 * 100) / 100
+    const water = Math.round(currentWeight * 0.04 * 100) / 100
     
     // Ideal weight
-    const idealWeight = calculateIdealWeight(playerData.height, playerData.position)
+    const idealWeight = calculateIdealWeight(currentHeight, playerData.position)
     
     return {
       // السعرات: قيمة واحدة حسب الخطة
@@ -399,6 +414,8 @@ const Calculator = dynamic(() => Promise.resolve(() => {
     }
     } catch (error) {
       console.error('Error calculating nutrition plan:', error)
+      // Hide results on error
+      setShowResults(false)
       // Return default values on error
       return {
         calories: 0,
@@ -433,7 +450,7 @@ const Calculator = dynamic(() => Promise.resolve(() => {
         caloriesRange: { maintain: 0, final_min: 0, final_max: 0, delta_min: 0, delta_max: 0 }
       }
     }
-  }, [playerData, selectedPlan])
+  }, [playerData, selectedPlan, inputValues])
 
   // Handle calculate button click
   const handleCalculate = () => {
@@ -1500,38 +1517,47 @@ const Calculator = dynamic(() => Promise.resolve(() => {
 
         {/* Calculate Button */}
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <p style={{
+            color: '#6b7280',
+            fontSize: '0.9rem',
+            marginBottom: '15px',
+            fontStyle: 'italic'
+          }}>
+            💡 النتائج تظهر تلقائياً عند تعديل المدخلات
+          </p>
+          
           <button
             onClick={handleCalculate}
             disabled={isCalculating}
             style={{
-              background: isCalculating ? '#9ca3af' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+              background: isCalculating ? '#9ca3af' : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
               color: 'white',
-              padding: '15px 30px',
-              borderRadius: '10px',
+              padding: '12px 25px',
+              borderRadius: '8px',
               border: 'none',
-              fontSize: '1.1rem',
+              fontSize: '1rem',
               fontWeight: 'bold',
               cursor: isCalculating ? 'not-allowed' : 'pointer',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
               transition: 'all 0.3s ease',
-              minWidth: '200px'
+              minWidth: '180px'
             }}
           >
             {isCalculating ? (
               <>
                 <div style={{
-                  width: '20px',
-                  height: '20px',
+                  width: '16px',
+                  height: '16px',
                   border: '2px solid rgba(255,255,255,0.3)',
                   borderTop: '2px solid white',
                   borderRadius: '50%',
                   animation: 'spin 1s linear infinite',
                   display: 'inline-block',
-                  marginRight: '10px'
+                  marginRight: '8px'
                 }}></div>
                 جاري الحساب...
               </>
-            ) : 'احسب الخطة الغذائية'}
+            ) : '🔄 إعادة حساب'}
           </button>
         </div>
 

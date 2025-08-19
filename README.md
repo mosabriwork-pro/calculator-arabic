@@ -4,6 +4,12 @@
 
 ## ✨ الميزات الرئيسية
 
+### 🚀 الحساب التلقائي
+- **نتائج فورية:** تظهر النتائج تلقائياً عند تعديل أي مدخل
+- **لا حاجة لزر "احسب":** النظام يحسب في الوقت الفعلي
+- **تجربة مستخدم محسنة:** رؤية التغييرات فوراً
+- **زر إعادة حساب اختياري:** للتحقق من صحة النتائج
+
 ### 🎯 حساب السعرات الحرارية
 - **BMR (معدل الأيض الأساسي)** باستخدام معادلة Mifflin-St Jeor
 - **TDEE (إجمالي استهلاك الطاقة اليومي)** مع عوامل النشاط
@@ -115,6 +121,35 @@ import { computeIdealWeight } from './src/utils/ideal-weight';
 const idealWeight = computeIdealWeight('CB', 175);
 // { min: 70, max: 77 }
 ```
+
+## 🔄 كيفية عمل الحساب التلقائي
+
+النظام يستخدم **React Hooks** مع **useMemo** للحساب التلقائي:
+
+```typescript
+const nutritionPlan = useMemo(() => {
+  // الحسابات تتم تلقائياً عند تغيير أي مدخل
+  const currentAge = inputValues.age !== '' ? Number(inputValues.age) : playerData.age
+  const currentWeight = inputValues.weight !== '' ? Number(inputValues.weight) : playerData.weight
+  const currentHeight = inputValues.height !== '' ? Number(inputValues.height) : playerData.height
+  
+  // إظهار النتائج تلقائياً عند وجود قيم صحيحة
+  if (currentAge >= 9 && currentWeight >= 20 && currentHeight >= 140) {
+    setShowResults(true)
+  }
+  
+  // حساب BMR, TDEE, الماكروز, الوزن المثالي
+  // ... جميع الحسابات
+  
+  return { calories, protein, carbs, fat, water, idealWeight }
+}, [playerData, selectedPlan, inputValues]) // dependencies للتحديث التلقائي
+```
+
+### المميزات:
+- ✅ **useMemo** مع dependencies صحيحة
+- ✅ **inputValues** للتحديث في الوقت الفعلي
+- ✅ **setShowResults(true)** تلقائياً
+- ✅ **معالجة الأخطاء** مع إخفاء النتائج
 
 ## 🧪 الاختبارات
 
