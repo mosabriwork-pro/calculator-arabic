@@ -274,7 +274,10 @@ export default function Navbar() {
             )}
           </div>
           {/* Store Button */}
-          <button
+          <a
+            href="https://mosabri.acadimiat.com/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="nav-button store-button"
             style={{
               color: 'white',
@@ -289,10 +292,8 @@ export default function Navbar() {
               alignItems: 'center',
               gap: '8px',
               cursor: 'pointer',
-              userSelect: 'none'
-            }}
-            onClick={() => {
-              alert('المتجر الالكتروني قريباً!');
+              userSelect: 'none',
+              textDecoration: 'none'
             }}
             onMouseEnter={e => {
               e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
@@ -305,7 +306,7 @@ export default function Navbar() {
           >
             <span className="button-icon">🛒</span>
             المتجر الالكتروني
-          </button>
+          </a>
         </div>
       </div>
 

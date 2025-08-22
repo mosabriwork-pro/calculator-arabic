@@ -389,448 +389,278 @@ export async function POST(request: NextRequest) {
 
     // Prepare email content
     const emailContent = `
-      <div style="
-        background: linear-gradient(135deg, #1a472a 0%, #0f2e1a 50%, #0a1f12 100%);
-        color: white;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding: 0;
-        margin: 0;
-        direction: rtl;
-        text-align: center;
-        min-height: 100vh;
-      ">
-        
-        <!-- Header Section -->
-        <div style="
-          background: linear-gradient(135deg, rgba(34,197,94,0.2) 0%, rgba(16,185,129,0.2) 100%);
-          padding: 40px 20px;
-          border-bottom: 3px solid rgba(34,197,94,0.3);
-        ">
-          <h1 style="
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0 0 10px 0;
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          ">
-            موصبري برو
-          </h1>
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ar">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>رمز الوصول - حاسبة موصبري برو</title>
+        <style>
+          /* Reset styles for email clients */
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
           
-          <h2 style="
-            font-size: 1.5rem;
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333333 !important;
+            background-color: #ffffff !important;
+            direction: rtl;
+            padding: 20px;
+          }
+          
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          
+          .header {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: #ffffff !important;
+            padding: 30px 20px;
+            text-align: center;
+          }
+          
+          .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ffffff !important;
+          }
+          
+          .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            color: #ffffff !important;
+          }
+          
+          .content {
+            padding: 30px 20px;
+            background-color: #ffffff;
+          }
+          
+          .code-section {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+          }
+          
+          .access-code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1a472a !important;
+            letter-spacing: 2px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+          }
+          
+          .validity-info {
+            background-color: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+          }
+          
+          .validity-info p {
+            color: #1976d2 !important;
             font-weight: 600;
             margin: 0;
-            color: #9ca3af;
-          ">
-            حاسبة لاعب كرة القدم
-          </h2>
-        </div>
-
-        <!-- Access Code Section -->
-        <div style="
-          background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(37,99,235,0.2) 100%);
-          padding: 40px 20px;
-          border-bottom: 3px solid rgba(59,130,246,0.3);
-        ">
-          <h3 style="
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin: 0 0 30px 0;
-            color: #3b82f6;
-          ">
-            استخدم هذا الرمز للدخول للآلة
-          </h3>
+          }
           
-          <div style="
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            color: #1f2937;
-            font-size: 2.5rem;
-            font-weight: bold;
-            padding: 20px 40px;
-            border-radius: 15px;
-            margin: 20px auto;
-            display: inline-block;
-            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
-            letter-spacing: 3px;
-          ">
-            ${accessCode}
-          </div>
-          
-          <p style="
-            font-size: 1.1rem;
-            color: #d1d5db;
+          .instructions {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
             margin: 20px 0;
-            line-height: 1.6;
-          ">
-            هذا الرمز صالح للاستخدام لمدة سنة
-          </p>
-        </div>
-
-        <!-- Instructions Section -->
-        <div style="
-          background: linear-gradient(135deg, rgba(139,92,246,0.2) 0%, rgba(124,58,237,0.2) 100%);
-          padding: 40px 20px;
-          border-bottom: 3px solid rgba(139,92,246,0.3);
-        ">
-          <h3 style="
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin: 0 0 25px 0;
-            color: #8b5cf6;
-          ">
-            كيفية الاستخدام
-          </h3>
+          }
           
-          <div style="
-            text-align: right;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 0 20px;
-          ">
-            <div style="
-              margin: 15px 0;
-              padding: 15px;
-              background: rgba(139,92,246,0.1);
-              border-radius: 10px;
-              border-right: 4px solid #8b5cf6;
-              position: relative;
-            ">
-              <span style="
-                position: absolute;
-                right: -15px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: #8b5cf6;
-                color: white;
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 1.1rem;
-              ">1</span>
-              <span style="
-                margin-right: 40px;
-                font-size: 1.1rem;
-                color: #e5e7eb;
-              ">اذهب إلى صفحة تسجيل الدخول</span>
-            </div>
-            
-            <div style="
-              margin: 15px 0;
-              padding: 15px;
-              background: rgba(139,92,246,0.1);
-              border-radius: 10px;
-              border-right: 4px solid #8b5cf6;
-              position: relative;
-            ">
-              <span style="
-                position: absolute;
-                right: -15px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: #8b5cf6;
-                color: white;
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 1.1rem;
-              ">2</span>
-              <span style="
-                margin-right: 40px;
-                font-size: 1.1rem;
-                color: #e5e7eb;
-              ">أدخل بريدك الإلكتروني</span>
-            </div>
-            
-            <div style="
-              margin: 15px 0;
-              padding: 15px;
-              background: rgba(139,92,246,0.1);
-              border-radius: 10px;
-              border-right: 4px solid #8b5cf6;
-              position: relative;
-            ">
-              <span style="
-                position: absolute;
-                right: -15px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: #8b5cf6;
-                color: white;
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 1.1rem;
-              ">3</span>
-              <span style="
-                margin-right: 40px;
-                font-size: 1.1rem;
-                color: #e5e7eb;
-              ">أدخل رمز الوصول أعلاه</span>
-            </div>
-            
-            <div style="
-              margin: 15px 0;
-              padding: 15px;
-              background: rgba(139,92,246,0.1);
-              border-radius: 10px;
-              border-right: 4px solid #8b5cf6;
-              position: relative;
-            ">
-              <span style="
-                position: absolute;
-                right: -15px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: #8b5cf6;
-                color: white;
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 1.1rem;
-              ">4</span>
-              <span style="
-                margin-right: 40px;
-                font-size: 1.1rem;
-                color: #e5e7eb;
-              ">اضغط "تسجيل الدخول"</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Security Notice -->
-        <div style="
-          background: linear-gradient(135deg, rgba(239,68,68,0.2) 0%, rgba(220,38,38,0.2) 100%);
-          padding: 30px 20px;
-          border-bottom: 3px solid rgba(239,68,68,0.3);
-        ">
-          <h3 style="
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin: 0 0 20px 0;
-            color: #ef4444;
-          ">
-            ⚠️ ملاحظات أمنية مهمة
-          </h3>
+          .instructions h3 {
+            color: #1a472a !important;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+          }
           
-          <ul style="
-            text-align: right;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 0 20px;
+          .step {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+          }
+          
+          .step-number {
+            background-color: #22c55e;
+            color: #ffffff !important;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+          }
+          
+          .step-text {
+            color: #333333 !important;
+            font-size: 16px;
+            flex: 1;
+          }
+          
+          .login-link {
+            color: #2563eb !important;
+            text-decoration: underline;
+            font-weight: 600;
+          }
+          
+          .features {
+            background-color: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          
+          .features h3 {
+            color: #0c4a6e !important;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+          }
+          
+          .feature-list {
             list-style: none;
-          ">
-            <li style="
-              margin: 10px 0;
-              padding: 10px;
-              background: rgba(239,68,68,0.1);
-              border-radius: 8px;
-              border-right: 3px solid #ef4444;
-            ">🔒 لا تشارك هذا الرمز مع أي شخص</li>
-            <li style="
-              margin: 10px 0;
-              padding: 10px;
-              background: rgba(239,68,68,0.1);
-              border-radius: 8px;
-              border-right: 3px solid #ef4444;
-            ">⏰ الرمز صالح لمدة سنة من تاريخ الاشتراك</li>
-            <li style="
-              margin: 10px 0;
-              padding: 10px;
-              background: rgba(239,68,68,0.1);
-              border-radius: 8px;
-              border-right: 3px solid #ef4444;
-            ">📱 إذا لم تطلب هذا الرمز، تجاهل هذا البريد</li>
-          </ul>
-        </div>
-
-        <!-- Features Section -->
-        <div style="
-          background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%);
-          padding: 40px 20px;
-          border-bottom: 3px solid rgba(16,185,129,0.3);
-        ">
-          <h3 style="
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin: 0 0 25px 0;
-            color: #10b981;
-          ">
-            مميزات الحاسبة
-          </h3>
+            padding: 0;
+          }
           
-          <div style="
-            text-align: right;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 0 20px;
-          ">
-            <div style="
-              margin: 15px 0;
-              padding: 15px;
-              background: rgba(16,185,129,0.1);
-              border-radius: 10px;
-              border-right: 4px solid #10b981;
-              position: relative;
-            ">
-              <span style="
-                position: absolute;
-                right: -15px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: #10b981;
-                color: white;
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 1.1rem;
-              ">✓</span>
-              <span style="
-                margin-right: 40px;
-                font-size: 1.1rem;
-                color: #e5e7eb;
-              ">حسابات دقيقة بناءً على مواصفاتك الرياضية</span>
+          .feature-list li {
+            color: #0c4a6e !important;
+            padding: 8px 0;
+            padding-right: 25px;
+            position: relative;
+          }
+          
+          .feature-list li:before {
+            content: "•";
+            color: #0ea5e9;
+            font-weight: bold;
+            font-size: 20px;
+            position: absolute;
+            right: 0;
+            top: 5px;
+          }
+          
+          .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+          }
+          
+          .footer p {
+            color: #6c757d !important;
+            font-size: 14px;
+            margin: 0;
+          }
+          
+          /* Mobile responsive */
+          @media only screen and (max-width: 600px) {
+            body {
+              padding: 10px;
+            }
+            
+            .container {
+              margin: 0;
+            }
+            
+            .header {
+              padding: 20px 15px;
+            }
+            
+            .content {
+              padding: 20px 15px;
+            }
+            
+            .access-code {
+              font-size: 24px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 رمز الوصول</h1>
+            <p>مرحباً بك في حاسبة موصبري برو للتغذية الرياضية</p>
+          </div>
+          
+          <div class="content">
+            <div class="code-section">
+              <h2 style="color: #1a472a !important; margin-bottom: 15px;">رمز الوصول الخاص بك</h2>
+              <div class="access-code">${accessCode}</div>
+              <p style="color: #6c757d !important; font-size: 14px;">استخدم هذا الرمز لتسجيل الدخول إلى الحاسبة</p>
             </div>
             
-            <div style="
-              margin: 15px 0;
-              padding: 15px;
-              background: rgba(16,185,129,0.1);
-              border-radius: 10px;
-              border-right: 4px solid #10b981;
-              position: relative;
-            ">
-              <span style="
-                position: absolute;
-                right: -15px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: #10b981;
-                color: white;
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 1.1rem;
-              ">✓</span>
-              <span style="
-                margin-right: 40px;
-                font-size: 1.1rem;
-                color: #e5e7eb;
-              ">خطط غذائية مخصصة لثلاثة أهداف مختلفة</span>
+            <div class="validity-info">
+              <p>⏰ الرمز صالح لمدة سنة من تاريخ الاشتراك</p>
             </div>
             
-            <div style="
-              margin: 15px 0;
-              padding: 15px;
-              background: rgba(16,185,129,0.1);
-              border-radius: 10px;
-              border-right: 4px solid #10b981;
-              position: relative;
-            ">
-              <span style="
-                position: absolute;
-                right: -15px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: #10b981;
-                color: white;
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 1.1rem;
-              ">✓</span>
-              <span style="
-                margin-right: 40px;
-                font-size: 1.1rem;
-                color: #e5e7eb;
-              ">توصيات خاصة</span>
+            <div class="instructions">
+              <h3>كيفية الاستخدام</h3>
+              <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-text">
+                  <a href="https://calculator-arabic.railway.app/login" class="login-link">اذهب إلى صفحة تسجيل الدخول</a>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-text">أدخل بريدك الإلكتروني</div>
+              </div>
+              <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-text">أدخل رمز الوصول أعلاه</div>
+              </div>
+              <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-text">اضغط "تسجيل الدخول"</div>
+              </div>
             </div>
             
-            <div style="
-              margin: 15px 0;
-              padding: 15px;
-              background: rgba(16,185,129,0.1);
-              border-radius: 10px;
-              border-right: 4px solid #10b981;
-              position: relative;
-            ">
-              <span style="
-                position: absolute;
-                right: -15px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: #10b981;
-                color: white;
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 1.1rem;
-              ">✓</span>
-              <span style="
-                margin-right: 40px;
-                font-size: 1.1rem;
-                color: #e5e7eb;
-              ">تقرير PDF شامل ومفصل</span>
+            <div class="features">
+              <h3>مميزات الحاسبة</h3>
+              <ul class="feature-list">
+                <li>حسابات دقيقة بناءً على مواصفاتك الرياضية</li>
+                <li>خطط غذائية مخصصة لثلاثة أهداف مختلفة</li>
+                <li>توصيات خاصة</li>
+                <li>تقرير PDF شامل ومفصل</li>
+              </ul>
             </div>
           </div>
+          
+          <div class="footer">
+            <p>تم إرسال هذا البريد بواسطة نظام موصبري برو للتغذية الرياضية</p>
+            <p>إذا لم تطلب هذا الرمز، يمكنك تجاهل هذا البريد</p>
+          </div>
         </div>
-
-        <!-- Footer -->
-        <div style="
-          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-          padding: 30px 20px;
-          text-align: center;
-        ">
-          <p style="
-            color: #64748b;
-            font-size: 0.9rem;
-            margin: 0;
-            line-height: 1.5;
-          ">
-            تم إنشاء هذا البريد الإلكتروني بواسطة نظام موصبري برو للتغذية الرياضية
-          </p>
-          <p style="
-            color: #475569;
-            font-size: 0.8rem;
-            margin: 10px 0 0 0;
-          ">
-            © ${new Date().getFullYear()} موصبري برو. جميع الحقوق محفوظة.
-          </p>
-        </div>
-      </div>
+      </body>
+      </html>
     `
 
     // Send email with retry
