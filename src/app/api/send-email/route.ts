@@ -643,15 +643,16 @@ export async function POST(request: NextRequest) {
               </div>
             </div>
             
-            <div class="features">
-              <h3>مميزات الحاسبة</h3>
-              <ul class="feature-list">
-                <li>حسابات دقيقة بناءً على مواصفاتك الرياضية</li>
-                <li>خطط غذائية مخصصة لثلاثة أهداف مختلفة</li>
-                <li>توصيات خاصة</li>
-                <li>تقرير PDF شامل ومفصل</li>
-              </ul>
-            </div>
+                      <div class="features">
+            <h3>مميزات الحاسبة</h3>
+            <ul class="feature-list">
+              <li>حسابات دقيقة بناءً على مواصفاتك الرياضية</li>
+              <li>نتائج حسابية فورية بناء على قواعد علمية في التغذية الرياضية</li>
+              <li>خطط غذائية مخصصة لثلاثة أهداف مختلفة</li>
+              <li>توصيات خاصة لرفع الأداء</li>
+              <li>تقرير خاص بإسمك شامل ومفصل</li>
+            </ul>
+          </div>
           </div>
           
           <div class="footer">
