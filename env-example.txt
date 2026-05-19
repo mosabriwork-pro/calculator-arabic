@@ -1,17 +1,18 @@
-# انسخ هذا الملف إلى .env.local أو أضف هذه المتغيرات في Railway
+# env-example (PLACEHOLDERS ONLY)
+# Copy relevant values into `.env.local` and DO NOT commit `.env.local`.
 
-# Email Configuration
-EMAIL_USER=mosabri.pro@gmail.com
-EMAIL_PASS=mosabri2024pro
+# Email Configuration (placeholder)
+EMAIL_USER=you@example.com
+EMAIL_PASS=your-email-app-password
 
-# App Configuration
-APP_SECRET=mosabri-calculator-secret-key-2024
-ADMIN_PASSWORD=admin123
+# App Configuration (placeholder)
+APP_SECRET=your-app-secret
+ADMIN_PASSWORD=strong-admin-password
 
-# Database Configuration
-DATABASE_URL=your-postgresql-url-here
+# Database Configuration (placeholder)
+DATABASE_URL=postgres://user:password@host:5432/dbname
 
 # Environment
 NODE_ENV=production
 PORT=3000
-NEXT_PUBLIC_DOMAIN=mosabri.top
+NEXT_PUBLIC_DOMAIN=your-domain.example.com

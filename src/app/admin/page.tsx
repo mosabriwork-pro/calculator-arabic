@@ -3956,6 +3956,7 @@ export default function AdminDashboard() {
                   : 0}%
               </div>
               <div>معدل النجاح</div>
+              <div/}
             </div>
             <div>
               <div style={{ color: '#8b5cf6', fontSize: '1.2rem', fontWeight: 'bold' }}>
